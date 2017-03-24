@@ -1,0 +1,6 @@
+{DeviceClass*:NIC}.{DeviceType:Integrated}.{Slot:1}-{Port:1}-{Partition:1}
+{DeviceClass*:NIC}.{DeviceType:Integrated}.{Slot:1}-{Port:2}-{Partition:1}
+{DeviceClass*:NIC}.{DeviceType:Integrated}.{Slot:1}-{Port:3}-{Partition:1}
+{DeviceClass*:NIC}.{DeviceType:Integrated}.{Slot:1}-{Port:4}-{Partition:1}
+{DeviceClass*:NIC}.{DeviceType:Slot}.{Slot:3}-{Port:1}-{Partition:1}
+{DeviceClass*:NIC}.{DeviceType:Slot}.{Slot:3}-{Port:2}-{Partition:1}
