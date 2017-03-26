@@ -20,7 +20,8 @@
                 "Input" : [
                     {
                         "ParameterName" : "iDRACSession",
-                        "Value" : "Session"
+                        "Value" : "Session",
+                        "Type" : "Variable"
                     }
                 ]
             }
@@ -31,7 +32,8 @@
                 "Input" : [
                     {
                         "ParameterName" : "iDRACSession",
-                        "Value" : "Session"
+                        "Value" : "Session",
+                        "Type" : "Variable"
                     }
                 ]
             }
@@ -42,7 +44,8 @@
                 "Input" : [
                     {
                         "ParameterName" : "iDRACSession",
-                        "Value" : "Session"
+                        "Value" : "Session",
+                        "Type" : "Variable"
                     }
                 ]
             }
@@ -53,18 +56,20 @@
                 "Input" : [
                     {
                         "ParameterName" : "iDRACSession",
-                        "Value" : "Session"
+                        "Value" : "Session",
+                        "Type" : "Variable"
                     }
                 ]
             }
         },
-        "Storage" : {
+        "DiskStorage" : {
             "Get" : {
                 "Command" : "Get-PEStorageController",
                 "Input" : [
                     {
                         "ParameterName" : "iDRACSession",
-                        "Value" : "Session"
+                        "Value" : "Session",
+                        "Type" : "Variable"
                     }
                 ]
             }
@@ -75,7 +80,37 @@
                 "Input" : [
                     {
                         "ParameterName" : "iDRACSession",
-                        "Value" : "Session"
+                        "Value" : "Session",
+                        "Type" : "Variable"
+                    }
+                ]
+            }
+        },
+        "PCIeStorage" : {
+            "Get" : {
+                "Command" : "Get-PEPCIeSSDExtender",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session",
+                        "Type" : "Variable"
+                    }
+                ]
+            }
+        },        
+        "PCIeDisk" : {
+            "Get" : {
+                "Command" : "Get-PEPhysicalDisk",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session",
+                        "Type" : "Variable"
+                    },
+                    {
+                        "ParameterName" : "BusProtocol",
+                        "Value" : "PCIe",
+                        "Type" : "String"
                     }
                 ]
             }
@@ -86,7 +121,8 @@
                 "Input" : [
                     {
                         "ParameterName" : "iDRACSession",
-                        "Value" : "Session"
+                        "Value" : "Session",
+                        "Type" : "Variable"
                     }
                 ]
             }
@@ -97,7 +133,8 @@
                 "Input" : [
                     {
                         "ParameterName" : "iDRACSession",
-                        "Value" : "Session"
+                        "Value" : "Session",
+                        "Type" : "Variable"
                     }
                 ]
             }
@@ -108,7 +145,8 @@
                 "Input" : [
                     {
                         "ParameterName" : "iDRACSession",
-                        "Value" : "Session"
+                        "Value" : "Session",
+                        "Type" : "Variable"
                     }
                 ]
             }            
@@ -255,7 +293,7 @@
                 }
             }            
         },
-        "Storage" : {
+        "DiskStorage" : {
             "IsArray" : 1,
             "IsChild" :1,
             "Parent" : "System",
@@ -284,6 +322,43 @@
                     "ProductName",
                     "ControllerFirmwareVersion",
                     "@{l='Slot';e={$_.PCISlot}}",
+                    "@{l='DiskCount';e={$fqdd=$_.FQDD;((Get-PEPhysicalDisk -iDracSession $Session).Where({$_.FQDD.Substring($_.FQDD.LastIndexOf(':')+1) -eq $fqdd})).Count}}"
+                ],
+                "Qualifiers" : {
+                    "UniqueOnly" : 1,
+                    "PreSelect" : 1
+                }
+            }                        
+        },
+        "PCIeStorage" : {
+            "IsArray" : 1,
+            "IsChild" :1,
+            "Parent" : "System",
+            "Related" : [
+                {
+                    "RelatedObject" : "PCIeDisk",
+                    "RelatedBy" : "FQDD",
+                    "IsArray" : 1,
+                    "IsChild" : 1,
+                    "SelectorSet" : {
+                        "Properties" : [
+                            "Model",
+                            "Revision",
+                            "SerialNumber",
+                            "@{l='Slot';e={$_.DeviceDescription.SubString($_.DeviceDescription.IndexOf('Slot')+5,2)}}",
+                            "@{l='ConnectedTo';e={$_.FQDD.Substring($_.FQDD.LastIndexOf(':')+1)}}"
+                        ],
+                        "Qualifiers" : {
+                            "PreSelect" : 0    
+                        }
+                    }            
+                }                    
+            ],            
+            "SelectorSet" : {
+                "Properties" : [
+                    "DeviceDescription",
+                    "FQDD",
+                    "@{l='Slot';e={$_.FQDD.Substring($_.FQDD.LastIndexOf('.')+1)}}",
                     "@{l='DiskCount';e={$fqdd=$_.FQDD;((Get-PEPhysicalDisk -iDracSession $Session).Where({$_.FQDD.Substring($_.FQDD.LastIndexOf(':')+1) -eq $fqdd})).Count}}"
                 ],
                 "Qualifiers" : {

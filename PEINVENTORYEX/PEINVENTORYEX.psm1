@@ -32,13 +32,18 @@ function Get-PEInventory
             {
                 $parameterName = $inputParam.ParameterName
                 $parameterValue = $inputParam.Value
-                if ($parameterValue -eq '$true')
+                $parameterType = $inputParam.Type
+                if ($parametrType -eq 'Boolean')
                 {
                     $parameterString += "-$parameterName "
                 }
-                else
+                elseif ($parameterType -eq 'Variable')
                 {
                     $parameterString += "-$parameterName `$$parameterValue "
+                }
+                elseif ($parameterType -eq 'String')
+                {
+                    $parameterString += "-$parameterName $parameterValue "
                 }
             }
             $getCommandString = @($getCommand, $parameterString) -join ' '
