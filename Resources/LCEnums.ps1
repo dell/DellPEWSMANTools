@@ -107,3 +107,29 @@ Add-Type -TypeDefinition @"
         }
     }
 "@
+
+Add-Type -TypeDefinition @"
+    using System;
+
+    namespace Disk {
+        [FlagsAttribute]
+        public enum BusProtocol
+        {
+            Unknown = 0,
+            SCSI = 1,
+            PATA = 2,
+            FIBRE = 3,
+            USB = 4,
+            SATA = 5,
+            SAS = 6,
+            PCIe = 7
+        }
+
+        [FlagsAttribute]
+        public enum MediaType
+        {
+            HDD = 0,
+            SSD = 1
+        }
+    }
+"@

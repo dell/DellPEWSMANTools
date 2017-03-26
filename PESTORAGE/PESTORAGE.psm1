@@ -40,10 +40,39 @@ Function Get-PEPhysicalDisk
                    ValueFromPipeline=$true,
                    ValueFromPipelineByPropertyName=$true, 
                    ValueFromRemainingArguments=$false)]
-        $iDRACSession
+        $iDRACSession,
+
+        [Parameter()]
+        [ValidateSet('HDD','SSD')]
+        $MediaType,
+
+        [Parameter()]
+        [ValidateSet('Unknown','SCSI','PATA','FIBRE','USB','SATA','SAS','PCIe')]
+        $BusProtocol
     )
     Process {
-        Get-CimInstance -CimSession $iDRACSession -ResourceUri 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_PhysicalDiskView' -Namespace 'root/dcim'
+        if ($MediaType -and $BusProtocol)
+        {
+            $mediaInt = [int]([Disk.MediaType]$MediaType)
+            $busProtocolInt = [int]([Disk.BusProtocol]$BusProtocol)
+            $filter = "MediaType=$mediaInt AND BusProtocol=$BusProtocolInt"
+        }
+        elseif ($MediaType)
+        {
+            $mediaInt = [int]([Disk.MediaType]$MediaType)          
+            $filter = "MediaType=$mediaInt"
+        }
+        elseif ($BusProtocol)
+        {
+            $busProtocolInt = [int]([Disk.BusProtocol]$BusProtocol)            
+            $filter = "BusProtocol=$BusProtocolInt"
+        }
+        else
+        {
+            $filter = $null
+        }
+
+        Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_PhysicalDiskView -Namespace 'root/dcim' -Filter $filter
     }
 }
 
@@ -417,6 +446,50 @@ Function Remove-PEVirtualDisk
     Process 
     {
         Invoke-CimMethod -InputObject $instance -MethodName DeleteVirtualDisk -CimSession $idracsession -Arguments @{'Target'=$InstanceID}
+    }
+}
+
+function Get-PEPCIeSSDExtender
+{
+    [CmdletBinding(
+        SupportsShouldProcess=$true,
+        ConfirmImpact="High"
+    )]
+
+    param (
+        [Parameter(Mandatory, 
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true, 
+                   ValueFromRemainingArguments=$false)]
+        $iDRACSession
+    )
+
+    Process 
+    {
+        $ssdExtender = Get-CimInstance -ClassName DCIM_PCIeSSDExtenderView -Namespace root\dcim -CimSession $idracsession -Verbose
+        return $ssdExtender
+    }
+}
+
+function Get-PEPCIeSSDBackPlane
+{
+    [CmdletBinding(
+        SupportsShouldProcess=$true,
+        ConfirmImpact="High"
+    )]
+
+    param (
+        [Parameter(Mandatory, 
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true, 
+                   ValueFromRemainingArguments=$false)]
+        $iDRACSession
+    )
+
+    Process 
+    {
+        $ssdExtender = Get-CimInstance -ClassName DCIM_PCIeSSDBackPlaneView -Namespace root\dcim -CimSession $idracsession -Verbose
+        return $ssdExtender
     }
 }
 
