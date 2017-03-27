@@ -1,5 +1,15 @@
 ﻿. "${PSScriptRoot}\Private\support.ps1"
+$programDataPath = "$env:ProgramData\Dell"
+$customerIdPath = "$env:ProgramData\Dell\customerid.txt"
+if (-not (Test-Path -Path $programDataPath)) 
+{
+    $null = New-Item -Path $programDataPath -ItemType Directory -Force 
+}
 
+if (-not (Test-Path -Path $customerIdPath))
+{
+    ([guid]::NewGuid()).guid | Set-Content -Path $customerIdPath -Force
+}
 function Get-PEInventory
 {
     [cmdletBinding()]
@@ -15,6 +25,7 @@ function Get-PEInventory
     )
 
     process {
+        $customerID = Get-Content -Path $customerIdPath
         $objectArray = @()
         #Initializtion based on the managementData retrieved from InventoryBlueprint.json
         $outputVariableName = $managementData.Initialization.OutputObject
@@ -68,6 +79,10 @@ function Get-PEInventory
         #region System component objects
         #Create a custom object with root object
         $inventoryObject = [Ordered] @{}
+        $inventoryObject.Add('Id',${customerID})  
+        $inventoryObject.Add('GeneratedOn',(Get-Date -Format MM-dd-yyyy:hh.mm.ss))  
+        $uniqueCustomerId = "$($paramHash.CustomerPrefix)-${customerID}"    
+        $inventoryObject.Add('UniqueCustomerId',$uniqueCustomerId)      
         
         #Generate the root values based on selectorset
         $rootSelectorProperties = $managementData.Formatter.$root.SelectorSet.Properties -join ','
