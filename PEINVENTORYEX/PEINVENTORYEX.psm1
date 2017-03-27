@@ -10,6 +10,7 @@ if (-not (Test-Path -Path $customerIdPath))
 {
     ([guid]::NewGuid()).guid | Set-Content -Path $customerIdPath -Force
 }
+
 function Get-PEInventory
 {
     [cmdletBinding()]
@@ -80,8 +81,9 @@ function Get-PEInventory
         #Create a custom object with root object
         $inventoryObject = [Ordered] @{}
         $inventoryObject.Add('Id',${customerID})  
-        $inventoryObject.Add('GeneratedOn',(Get-Date -Format MM-dd-yyyy:hh.mm.ss))  
-        $uniqueCustomerId = "$($paramHash.CustomerPrefix)-${customerID}"    
+        $inventoryObject.Add('GeneratedOn',(Get-Date -Format MM-dd-yyyy:hh.mm.ss))
+        $ipHashCode = $paramHash.ipaddress.GetHashcode()  
+        $uniqueCustomerId = "$($paramHash.CustomerPrefix)-${customerID}${ipHashCode}"    
         $inventoryObject.Add('UniqueCustomerId',$uniqueCustomerId)      
         
         #Generate the root values based on selectorset
@@ -341,6 +343,7 @@ function Compare-PEInventory
             $comparerObject = $managementData.Comparer
             foreach ($comparer in $comparerObject.psobject.Properties.name)
             {
+                #Must Match properties first
                 $mustMatchProperties = $comparerObject.$comparer.MustMatch
                 foreach ($mandatoryProperty in $mustMatchProperties) 
                 {
