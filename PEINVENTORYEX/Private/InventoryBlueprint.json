@@ -258,8 +258,9 @@
             }
         },
         "Memory" : {
-            "IsArray" : 0,
+            "IsArray" : 1,
             "IsChild" : 1,
+            "Preselect" : 1,
             "Parent" : "System",
             "SelectorSet" : {
                 "Properties" : [

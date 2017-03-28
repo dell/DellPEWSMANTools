@@ -145,6 +145,12 @@ function Get-PEInventory
                 if ([bool]$componentFormatter.IsArray)
                 {
                     $componentDetailArray = @()
+                    if ($componentFormatter.Preselect)
+                    {
+                        $componentObjectpreselectCommand = @('$componentObject', $childSelectorString) -join ' | '
+                        $componentObject = &([scriptblock]::Create($componentObjectpreselectCommand)) 
+                    }
+
                     foreach ($instance in $componentObject)
                     {
                         #Create the command
