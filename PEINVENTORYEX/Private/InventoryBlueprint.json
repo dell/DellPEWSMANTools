@@ -150,7 +150,19 @@
                     }
                 ]
             }            
-        }
+        },
+        "BootOrder" : {
+            "Get" : {
+                "Command" : "Get-PEBootOrder",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session",
+                        "Type" : "Variable"
+                    }
+                ]
+            }
+        }        
     },
     "Configuration" : {
         "BIOSConfiguration" : {
@@ -166,8 +178,7 @@
             "Groups" : {
                 "Processor Settings" : [
                     "Logical Processor",
-                    "Virtualization Technology",
-                    "Dell Controlled Turbo"
+                    "Virtualization Technology"
                 ],
                 "Boot Settings" : [
                     "Boot Mode",
@@ -179,10 +190,18 @@
                     "VLAN"
                 ],
                 "System Profile Settings" : [
-                    "C States",
-                    "C1E",
                     "System Profile"
-                ]
+                ],
+                "Integrated Devices" : [
+                    "SR-IOV Global Enable"
+                ],
+                "System Security" : [
+                    "Power Button",
+                    "Secure Boot",
+                    "Secure Boot Policy",
+                    "AC Power Recovery",
+                    "AC Power Recovery Delay"
+                ]   
             }
         },
         "DRACConfiguration" : {
@@ -201,20 +220,17 @@
                 ],
                 "NIC Information" : [
                     "NIC Enable",
-                    "NIC Selection",
-                    "NIC Failover",
-                    "Enable VLAN"
+                    "NIC Selection"
                 ],
                 "IPv4 Information" : [
                     "IPv4 Enable",
                     "IPv4 DHCP Enable",
-                    "DNS Servers From DHCP"
-                ],
-                "IPv6 Information" : [
-                    "IPV6 Enable",
-                    "IPV6 Auto Config",
-                    "DNS Server From DHCP6",
-                    "Address State"
+                    "DNS Servers From DHCP",
+                    "IPv4 Address",
+                    "Net Mask",
+                    "Gateway",
+                    "DNS Server 1",
+                    "DNS Server 2"
                 ]
             }
         }
@@ -418,6 +434,17 @@
                 }
             }            
         },
+        "BootOrder" : {
+            "IsArray" : 1,
+            "IsChild" : 1,
+            "Parent" : "System",
+            "SelectorSet" : {
+                "Properties" : [
+                    "BIOSBootString",
+                    "CurrentAssignedSequence"
+                ]
+            }
+        },
         "BIOSConfiguration" : {
             "IsArray" : 0,
             "SelectorSet" : {
@@ -466,5 +493,10 @@
             ],
             "NoMatchAction" : "ReportError"
         }
+    },
+    "Report" : {
+        "Exclude" : [
+            
+        ]
     }
 }

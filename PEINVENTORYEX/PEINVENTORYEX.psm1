@@ -13,15 +13,20 @@ if (-not (Test-Path -Path $customerIdPath))
 
 function Get-PEInventory
 {
-    [cmdletBinding()]
+    [cmdletBinding(DefaultParameterSetName='Raw')]
     param (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory,ParameterSetName='Raw')]
+        [Parameter(Mandatory,ParameterSetName='Json')]
         [hashtable] $ParamHash,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='Raw')]
         [Switch] $Raw,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='Json')]
+        [Switch] $AsJson,
+
+        [Parameter(Mandatory,ParameterSetName='Json')]
+        [ValidateScript({Test-Path -Path $_ -PathType Container})]
         [String] $OutputPath
     )
 
@@ -307,88 +312,85 @@ function Get-PEInventory
             $inventoryObject.Configuration.Add($configurationData, $configurationObject)
         }
 
-        if ($raw)
+        if ($AsJson)
+        {
+            $jsonString = $inventoryObject | ConvertTo-Json -Depth 100
+            $outFileName = "${OutputPath}\$($paramHash.IPAddress).json"
+            $jsonString | Out-File -FilePath $outFileName -Force            
+        }
+        elseif ($raw)
         {
             return $inventoryObject
         }
-        elseif ($OutputPath)
-        {
-            $jsonString = $inventoryObject | ConvertTo-Json -Depth 100
-            $jsonString | Out-File -FilePath $OutputPath -Force
-        }
-        else
-        {
-            $inventoryObject | ConvertTo-Json -Depth 100
-        }
     }
 
 }
 
-function Compare-PEInventory
-{
-    [cmdletbinding()]
-    param (
-        [parameter(mandatory)]
-        [String] $ReferenceSystem,
-
-        [Parameter(mandatory)]
-        [String[]] $DifferenceSystem,
-
-        [Parameter(mandatory)]
-        [pscredential] $Credential
-    )
-
-    process
-    {
-        #Get reference inventory JSON
-        $referenceInventory = Get-PEInventory -ParamHash @{'username'=$Credential.UserName;'password'=$Credential.GetNetworkCredential().Password;'ipaddress'=$ReferenceSystem} -Verbose -Raw
-        
-        foreach ($system in $DifferenceSystem)
-        {
-            $differenceInventory = Get-PEInventory -ParamHash @{'username'=$Credential.UserName;'password'=$Credential.GetNetworkCredential().Password;'ipaddress'=$system} -Verbose -Raw
-            $comparerObject = $managementData.Comparer
-            foreach ($comparer in $comparerObject.psobject.Properties.name)
-            {
-                #Must Match properties first
-                $mustMatchProperties = $comparerObject.$comparer.MustMatch
-                foreach ($mandatoryProperty in $mustMatchProperties) 
-                {
-                    if ($differenceInventory.$comparer.$mandatoryProperty -ne $referenceInventory.$comparer.$mandatoryProperty)
-                    {
-                        #Take action based on the NoMatchAction
-                        switch ($comparer.NoMatchAction)
-                        {
-                            "Halt" {
-                                Write-Error -Message "Expected $system $mandatoryProperty to be $($referenceInventory.$comparer.$mandatoryProperty)"
-                            }
-                        }
-                    }
-                }
-
-                #look at optional properties too
-                $optionalProperties = $comparerObject.$comparer.Optional
-                foreach ($optionalProperty in $optionalProperties)
-                {
-                    if ($differenceInventory.$comparer.$optionalProperty -ne $referenceInventory.$comparer.$optionalProperty)
-                    {
-                        #Take action based on the NoMatchAction
-                        switch ($comparer.NoMatchAction)
-                        {
-                            "ReportError" {
-                                $complianceHash = @{
-                                    'Report'="Expected $system $optionalProperty to be $($referenceInventory.$comparer.$optionalProperty)"
-                                    'ComplianceState' = $false
-                                }
-                                #Add a compliance object to the object being compared
-                                $differenceInventory.$comparer.Add('Compliance',$complianceHash)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+#function Compare-PEInventory
+#{
+#    [cmdletbinding()]
+#    param (
+#        [parameter(mandatory)]
+#        [String] $ReferenceSystem,
+#
+#        [Parameter(mandatory)]
+#        [String[]] $DifferenceSystem,
+#
+#        [Parameter(mandatory)]
+#        [pscredential] $Credential
+#    )
+#
+#    process
+#    {
+#        #Get reference inventory JSON
+#        $referenceInventory = Get-PEInventory -ParamHash @{'username'=$Credential.UserName;'password'=$Credential.GetNetworkCredential().Password;'ipaddress'=$ReferenceSystem} -Verbose -Raw
+#        
+#        foreach ($system in $DifferenceSystem)
+#        {
+#            $differenceInventory = Get-PEInventory -ParamHash @{'username'=$Credential.UserName;'password'=$Credential.GetNetworkCredential().Password;'ipaddress'=$system} -Verbose -Raw
+#            $comparerObject = $managementData.Comparer
+#            foreach ($comparer in $comparerObject.psobject.Properties.name)
+#            {
+#                #Must Match properties first
+#                $mustMatchProperties = $comparerObject.$comparer.MustMatch
+#                foreach ($mandatoryProperty in $mustMatchProperties) 
+#                {
+#                    if ($differenceInventory.$comparer.$mandatoryProperty -ne $referenceInventory.$comparer.$mandatoryProperty)
+#                    {
+#                        #Take action based on the NoMatchAction
+#                        switch ($comparer.NoMatchAction)
+#                        {
+#                            "Halt" {
+#                                Write-Error -Message "Expected $system $mandatoryProperty to be $($referenceInventory.$comparer.$mandatoryProperty)"
+#                            }
+#                        }
+#                    }
+#                }
+#
+#                #look at optional properties too
+#                $optionalProperties = $comparerObject.$comparer.Optional
+#                foreach ($optionalProperty in $optionalProperties)
+#                {
+#                    if ($differenceInventory.$comparer.$optionalProperty -ne $referenceInventory.$comparer.$optionalProperty)
+#                    {
+#                        #Take action based on the NoMatchAction
+#                        switch ($comparer.NoMatchAction)
+#                        {
+#                            "ReportError" {
+#                                $complianceHash = @{
+#                                    'Report'="Expected $system $optionalProperty to be $($referenceInventory.$comparer.$optionalProperty)"
+#                                    'ComplianceState' = $false
+#                                }
+#                                #Add a compliance object to the object being compared
+#                                $differenceInventory.$comparer.Add('Compliance',$complianceHash)
+#                            }
+#                        }
+#                    }
+#                }
+#            }
+#        }
+#    }
+#}
 
 function Initiaize-InventoryObject 
 {
