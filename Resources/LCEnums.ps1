@@ -17,6 +17,14 @@ Add-Type -TypeDefinition @"
 "@
 
 Add-Type -TypeDefinition @"
+   public enum HashType
+   {
+      MD5 = 1,
+      SHA1 = 2
+   }
+"@
+
+Add-Type -TypeDefinition @"
    public enum ExportUse
    {
       Default = 0,

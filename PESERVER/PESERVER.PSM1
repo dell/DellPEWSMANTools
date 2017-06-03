@@ -2814,4 +2814,107 @@ function Get-PEPowerSupply
     }
 }
 
+function Update-PESystemFromRepository
+{
+    [CmdletBinding(DefaultParameterSetName='General')]
+    Param
+    (
+        [Parameter(Mandatory)]
+        $iDRACSession,
+
+        [Parameter(Mandatory)]
+        [ValidateScript({[System.Net.IPAddress]::TryParse($_,[ref]$null)})]
+        [String] $IPAddress,
+
+        [Parameter(Mandatory,ParameterSetName='General')]
+        [Parameter(Mandatory,ParameterSetName='Passthru')]
+        [Parameter(Mandatory,ParameterSetName='Wait')]
+        [String]$ShareName,
+
+        [Parameter(Mandatory)]
+        [ValidateSet("NFS","CIFS")]
+        [String]$ShareType = "CIFS",
+
+        [Parameter(Mandatory)]
+        [PSCredential]$Credential,
+
+        [Parameter(Mandatory)]
+        [String]$CatalogFile,
+
+        [Parameter()]
+        [bool] $RebootNeeded = $False,
+
+        [Parameter()]
+        [Switch] $ValidateOnly 
+    
+    )
+
+    $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_SoftwareInstallationService";Name="DCIM:SoftwareUpdate";}
+    $instance = New-CimInstance -ClassName DCIM_SoftwareInstallationService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
+        
+    $Parameters = @{
+        IPAddress = $IPAddress
+        ShareName = $ShareName
+        ShareType = ([ShareType]$ShareType -as [int])
+        #Mountpoint = $ShareName
+        Username = $Credential.UserName
+        Password = $Credential.GetNetworkCredential().Password
+        CatalogFile = $CatalogFile
+        RebootNeeded = $RebootNeeded
+    }
+
+    if ($ValidateOnly)
+    {
+        $Parameters.Add('ApplyUpdate',1)
+    }
+    else
+    {
+        $Parameters.Add('ApplyUpdate',0)
+    }
+
+    $job = Invoke-CimMethod -InputObject $instance -MethodName InstallFromRepository -CimSession $session -Arguments $Parameters
+
+    if ($ValidateOnly)
+    {
+        Wait-PEConfigurationJob -iDRACSession $Session -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($session.ComputerName)"
+        $returnXml = [xml] (Invoke-CimMethod -InputObject $instance -MethodName GetRepoBasedUpdateList -CimSession $session).PackageList
+
+        $componentReport = @()
+        foreach ($instance in $returnXml.Cim.MESSAGE.SIMPLEREQ.'VALUE.NAMEDINSTANCE'.INSTANCENAME)
+        {
+            $propertyHash = [Ordered] @{}
+            $propertyHash.Add('ComponentName',$instance.PROPERTY.Where({$_.Name -eq 'DisplayName'}).Value)
+            $propertyHash.Add('UpdateVersion',$instance.PROPERTY.Where({$_.Name -eq 'PackageVersion'}).Value)
+            $propertyHash.Add('InstalledVersion',$instance.'Property.array'.Where({$_.Name -eq 'ComponentInstalledVersion'}).'Value.Array'.Value)
+            $componentReport += $propertyHash
+        }
+        $componentReport
+    }
+}
+
+function New-PESystemRebootJob
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory)]
+        $iDRACSession,
+
+        [Parameter(Mandatory)]
+        [ValidateSet(1,2,3)]
+        [String] $RebootJobType
+    
+    )
+
+    $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_SoftwareInstallationService";Name="DCIM:SoftwareUpdate";}
+    $instance = New-CimInstance -ClassName DCIM_SoftwareInstallationService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
+        
+    $Parameters = @{
+        RebootJobType = $RebootJobType
+    }
+
+    Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $session -Arguments $Parameters
+}
+
+
 Export-ModuleMember -Function *
