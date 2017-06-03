@@ -1,0 +1,9 @@
+[ClassVersion("1.0"), FriendlyName("PEOneTimeBoot")]
+class PEOneTimeBoot : OMI_BaseResource
+{
+    [Key] String Id;
+    [Required] String DRACIPAddress;
+    [Required,EmbeddedInstance("MSFT_Credential")] string DRACCredential;
+    [Write, ValueMap{"Enabled","Disabled"}, Values{"Enabled","Disabled"}] String OneTimeBootMode;
+    [Write] String OneTimeBootDevice;
+};

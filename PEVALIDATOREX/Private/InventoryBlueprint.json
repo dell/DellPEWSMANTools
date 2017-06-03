@@ -1,0 +1,334 @@
+{
+    "Initialization" : {
+        "Command" : "New-PEDRACSession",
+        "Parameters" : [
+            {
+                "Name" : "Credential",
+                "Type" : "PSCredential"
+            },
+            {
+                "Name" : "IPAddress",
+                "Type" : "String"
+            }
+        ],
+        "OutputObject" : "Session"
+    },
+    "Objects" : {
+        "System" : {
+            "Get" : {
+                "Command" : "Get-PESystemInformation",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"
+                    }
+                ]
+            }
+        },
+        "Processor" : {
+            "Get" : {
+                "Command" : " Get-PECPU",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"
+                    }
+                ]
+            }
+        },
+        "Memory" : {
+            "Get" : {
+                "Command" : " Get-PEMemory",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"
+                    }
+                ]
+            }
+        },        
+        "Network" : {
+            "Get" : {
+                "Command" : "Get-PENetworkDevice",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"
+                    }
+                ]
+            }
+        },
+        "Storage" : {
+            "Get" : {
+                "Command" : "Get-PEStorageController",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"
+                    }
+                ]
+            }
+        },
+        "PhysicalDisk" : {
+            "Get" : {
+                "Command" : "Get-PEPhysicalDisk",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"
+                    }
+                ]
+            }
+        },
+        "DRAC" : {
+            "Get" : {
+                "Command" : "Get-PEDRACInformation",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"
+                    }
+                ]
+            }
+        },
+        "SoftwareInventory" : {
+            "Get" :{
+                "Command" : "Get-PESoftwareInventory",
+                "Input" :[
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"                        
+                    },
+                    {
+                        "ParameterName" : "Installed",
+                        "Value" : "$true"
+                    }
+                ]
+            }
+        }
+    },
+    "Configuration" : {
+        "BIOSConfiguration" : {
+            "Get" : {
+                "Command" : "Get-PEBIOSAttribute",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"
+                    }
+                ]
+            },
+            "Groups" : {
+                "Processor Settings" : [
+                    "Logical Processor",
+                    "Virtualization Technology",
+                    "Dell Controlled Turbo"
+                ],
+                "Boot Settings" : [
+                    "Boot Mode",
+                    "Boot Sequence Retry"
+                ],
+                "PXE Device1 Settings" : [
+                    "Interface",
+                    "Protocol",
+                    "VLAN"
+                ],
+                "System Profile Settings" : [
+                    "C States",
+                    "C1E",
+                    "System Profile"
+                ]
+            }
+        },
+        "DRACConfiguration" : {
+            "Get" : {
+                "Command" : "Get-PEDRACAttribute",
+                "Input" : [
+                    {
+                        "ParameterName" : "iDRACSession",
+                        "Value" : "Session"
+                    }
+                ]
+            },
+            "Groups" : {
+                "IPMI LAN Information" : [
+                    "Enable or Disable IPMI over LAN"
+                ],
+                "NIC Information" : [
+                    "NIC Enable",
+                    "NIC Selection",
+                    "NIC Failover",
+                    "Enable VLAN"
+                ],
+                "IPv4 Information" : [
+                    "IPv4 Enable",
+                    "IPv4 DHCP Enable",
+                    "DNS Servers From DHCP"
+                ],
+                "IPv6 Information" : [
+                    "IPV6 Enable",
+                    "IPV6 Auto Config",
+                    "DNS Server From DHCP6",
+                    "Address State"
+                ]
+            }
+        }
+    },    
+    "Formatter" : {
+        "System" : {
+            "IsRoot" : 1,
+            "IsChild" : 0,
+            "IsArray" : 0,
+            "SelectorSet" : {
+                "Properties" : [
+                    "ServiceTag",
+                    "Model",
+                    "@{l='TotalMemoryGB';e={$_.SysMemTotalSize/1024}}"
+                ],
+                "Qualifiers" : {
+                    
+                }
+            }         
+        },
+        "Processor" : {
+            "IsChild" : 1,
+            "IsArray" : 0,            
+            "Parent" : "System",
+            "SelectorSet" : {
+                "Properties" : [
+                    "Model",
+                    "NumberOfProcessorCores"    
+                ],
+                "Qualifiers" : {
+                    "UniqueOnly" : 1,
+                    "PreSelect" : 0,
+                    "Aggregate" : {
+                        "By" : "InstanceCount",
+                        "PropertyName" : "CPUCount"
+                    }
+                }
+            }
+        },
+        "Memory" : {
+            "IsArray" : 0,
+            "IsChild" : 1,
+            "Parent" : "System",
+            "SelectorSet" : {
+                "Properties" : [
+                    "Model",
+                    "Speed"   ,
+                    "Size"
+                ],
+                "Qualifiers" : {
+                    "UniqueOnly" : 1,
+                    "PreSelect" : 0,
+                    "Aggregate" : {
+                        "By" : "InstanceCount",
+                        "PropertyName" : "DIMMCount"
+                    }
+                }
+            }
+        },
+        "Network" : {
+            "IsArray" : 1,
+            "IsChild" : 1,
+            "Parent" : "System",
+            "SelectorSet" : {
+                "Properties" : [
+                    "@{l='ProductName';e={$_.ProductName.Remove($_.ProductName.LastIndexOf('-'))}}",
+                    "FamilyVersion",
+                    "PermanentMACAddress",
+                    "@{l='Slot';e={if($pcieSlottype -Contains $_.SlotType){($_.InstanceID.Split('.'))[2].Split('-')[0]}else{'Embedded'}}}"
+                ],
+                "Qualifiers" : {
+                    "UniqueOnly" : 0
+                }
+            }            
+        },
+        "Storage" : {
+            "IsArray" : 1,
+            "IsChild" :1,
+            "Parent" : "System",
+            "Related" : [
+                {
+                    "RelatedObject" : "PhysicalDisk",
+                    "RelatedBy" : "FQDD",
+                    "IsArray" : 1,
+                    "IsChild" : 1,
+                    "SelectorSet" : {
+                        "Properties" : [
+                            "Model",
+                            "Revision",
+                            "SerialNumber",
+                            "Slot",
+                            "@{l='ConnectedTo';e={$_.FQDD.Substring($_.FQDD.LastIndexOf(':')+1)}}"
+                        ],
+                        "Qualifiers" : {
+                            "PreSelect" : 0    
+                        }
+                    }            
+                }                    
+            ],            
+            "SelectorSet" : {
+                "Properties" : [
+                    "ProductName",
+                    "ControllerFirmwareVersion",
+                    "FQDD",
+                    "@{l='DiskCount';e={$fqdd=$_.FQDD;((Get-PEPhysicalDisk -iDracSession $Session).Where({$_.FQDD.Substring($_.FQDD.LastIndexOf(':')+1) -eq $fqdd})).Count}}"
+                ],
+                "Qualifiers" : {
+                    "UniqueOnly" : 1,
+                    "PreSelect" : 1
+                }
+            }                        
+        },
+        "DRAC" :{
+            "IsArray" : 0,
+            "IsChild" : 1,
+            "Parent" : "System",            
+            "SelectorSet" : {
+                "Properties" :[
+                    "Model",
+                    "FirmwareVersion",
+                    "PermanentMACAddress"
+                ],
+                "Qualifiers" : {
+                    "PreSelect" : 0
+                }
+            }            
+        },
+        "SoftwareInventory" : {
+            "IsArray" : 1,
+            "IsChild" : 1,
+            "Parent" : "System",
+            "SelectorSet" : {
+                "Properties" :[
+                    "ElementName",
+                    "VersionString",
+                    "ComponentType"
+                ],
+                "Qualifiers" : {
+                    "PreSelect" : 0
+                }
+            }            
+        },
+        "BIOSConfiguration" : {
+            "IsArray" : 0,
+            "SelectorSet" : {
+                "Properties" : [
+                    "AttributeDisplayName",
+                    "CurrentValue"
+                ]
+            }
+        },
+        "DRACConfiguration" : {
+            "IsArray" : 0,
+            "SelectorSet" : {
+                "Properties" : [
+                    "AttributeDisplayName",
+                    "CurrentValue"
+                ]
+            }
+        }
+    }
+}
