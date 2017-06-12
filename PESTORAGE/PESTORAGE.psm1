@@ -1,4 +1,20 @@
-﻿Function Get-PEStorageController
+﻿<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+Function Get-PEStorageController
 {
     [CmdletBinding()]
     param (
@@ -15,6 +31,22 @@
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function Get-PEVirtualDisk 
 {
     [CmdletBinding()]
@@ -32,6 +64,28 @@ Function Get-PEVirtualDisk
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER MediaType
+Parameter description
+
+.PARAMETER BusProtocol
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function Get-PEPhysicalDisk
 {
     [CmdletBinding()]
@@ -76,6 +130,31 @@ Function Get-PEPhysicalDisk
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER DiskType
+Parameter description
+
+.PARAMETER DiskProtocol
+Parameter description
+
+.PARAMETER DiskEncrypt
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function Get-PEAvailableDisk
 {
     [CmdletBinding()]
@@ -102,6 +181,22 @@ Function Get-PEAvailableDisk
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function Get-PEEnclosure 
 {
     [CmdletBinding()]
@@ -118,6 +213,43 @@ Function Get-PEEnclosure
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER InstanceID
+Parameter description
+
+.PARAMETER RebootType
+Parameter description
+
+.PARAMETER StartTime
+Parameter description
+
+.PARAMETER UntilTime
+Parameter description
+
+.PARAMETER Force
+Parameter description
+
+.PARAMETER Wait
+Parameter description
+
+.PARAMETER Passthru
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function Clear-PERAIDConfiguration 
 {
     [CmdletBinding(
@@ -231,6 +363,46 @@ Function Clear-PERAIDConfiguration
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER InstanceID
+Parameter description
+
+.PARAMETER RebootType
+Parameter description
+
+.PARAMETER RebootRequired
+Parameter description
+
+.PARAMETER JobType
+Parameter description
+
+.PARAMETER StartTime
+Parameter description
+
+.PARAMETER UntilTime
+Parameter description
+
+.PARAMETER Wait
+Parameter description
+
+.PARAMETER Passthru
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function New-PETargetedConfigurationJob 
 {
     [CmdletBinding(DefaultParameterSetName='General')]
@@ -332,6 +504,25 @@ Function New-PETargetedConfigurationJob
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER InstanceID
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function Clear-PEForeignConfiguration 
 {
     [CmdletBinding(
@@ -366,6 +557,31 @@ Function Clear-PEForeignConfiguration
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER JobID
+Parameter description
+
+.PARAMETER StartTimeInterval
+Parameter description
+
+.PARAMETER UntilTime
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function New-PEJobQueue 
 {
     [CmdletBinding()]
@@ -416,6 +632,25 @@ Function New-PEJobQueue
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER InstanceID
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function Remove-PEVirtualDisk 
 {
     [CmdletBinding(
@@ -449,6 +684,22 @@ Function Remove-PEVirtualDisk
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PEPCIeSSDExtender
 {
     [CmdletBinding(
@@ -471,6 +722,22 @@ function Get-PEPCIeSSDExtender
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PEPCIeSSDBackPlane
 {
     [CmdletBinding(

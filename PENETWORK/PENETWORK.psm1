@@ -1,3 +1,19 @@
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PENetworkDevice
 {
     [CmdletBinding()]
@@ -20,6 +36,31 @@ function Get-PENetworkDevice
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER FQDD
+Parameter description
+
+.PARAMETER GroupDisplayName
+Parameter description
+
+.PARAMETER AttributeDisplayName
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PENetworkDeviceAttribute
 {
     [CmdletBinding(DefaultParameterSetName='All')]
@@ -113,6 +154,25 @@ function Get-PENetworkDeviceAttribute
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER FQDD
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PENetworkDeviceCapability
 {
     [CmdletBinding()]
@@ -147,6 +207,25 @@ function Get-PENetworkDeviceCapability
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER FQDD
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PENetworkDeviceStatistic
 {
     [CmdletBinding()]

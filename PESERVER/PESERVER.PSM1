@@ -40,6 +40,22 @@ function Get-PESystemInformation
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PEMemory
 {
     [CmdletBinding()]
@@ -2541,6 +2557,28 @@ function Set-PEAutobackupSchedule
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER Installed
+Parameter description
+
+.PARAMETER Available
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function  Get-PESoftwareInventory
 {
     [CmdletBinding(DefaultParameterSetName='General')]
@@ -2592,6 +2630,25 @@ function  Get-PESoftwareInventory
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER AttributeName
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PELCAttribute
 {
     [CmdletBinding(DefaultParameterSetName='All')]
@@ -2647,6 +2704,22 @@ function Get-PELCAttribute
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PELCState
 {
     [CmdletBinding()]
@@ -2686,6 +2759,28 @@ function Get-PELCState
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER AttributeDisplayName
+Parameter description
+
+.PARAMETER GroupDisplayName
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PESystemAttribute
 {
     [CmdletBinding()]
@@ -2749,6 +2844,22 @@ function Get-PESystemAttribute
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PEFan
 {
     [CmdletBinding()]
@@ -2770,6 +2881,22 @@ function Get-PEFan
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PECPU
 {
     [CmdletBinding()]
@@ -2792,6 +2919,22 @@ function Get-PECPU
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PEPowerSupply
 {
     [CmdletBinding()]
@@ -2814,6 +2957,43 @@ function Get-PEPowerSupply
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER IPAddress
+Parameter description
+
+.PARAMETER ShareName
+Parameter description
+
+.PARAMETER ShareType
+Parameter description
+
+.PARAMETER Credential
+Parameter description
+
+.PARAMETER CatalogFile
+Parameter description
+
+.PARAMETER RebootNeeded
+Parameter description
+
+.PARAMETER ValidateOnly
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Update-PESystemFromRepository
 {
     [CmdletBinding(DefaultParameterSetName='General')]
@@ -2872,26 +3052,76 @@ function Update-PESystemFromRepository
         $Parameters.Add('ApplyUpdate',0)
     }
 
-    $job = Invoke-CimMethod -InputObject $instance -MethodName InstallFromRepository -CimSession $session -Arguments $Parameters
+    $job = Invoke-CimMethod -InputObject $instance -MethodName InstallFromRepository -CimSession $iDRACSession -Arguments $Parameters
 
     if ($ValidateOnly)
     {
         Wait-PEConfigurationJob -iDRACSession $Session -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($session.ComputerName)"
-        $returnXml = [xml] (Invoke-CimMethod -InputObject $instance -MethodName GetRepoBasedUpdateList -CimSession $session).PackageList
-
-        $componentReport = @()
-        foreach ($instance in $returnXml.Cim.MESSAGE.SIMPLEREQ.'VALUE.NAMEDINSTANCE'.INSTANCENAME)
-        {
-            $propertyHash = [Ordered] @{}
-            $propertyHash.Add('ComponentName',$instance.PROPERTY.Where({$_.Name -eq 'DisplayName'}).Value)
-            $propertyHash.Add('UpdateVersion',$instance.PROPERTY.Where({$_.Name -eq 'PackageVersion'}).Value)
-            $propertyHash.Add('InstalledVersion',$instance.'Property.array'.Where({$_.Name -eq 'ComponentInstalledVersion'}).'Value.Array'.Value)
-            $componentReport += $propertyHash
-        }
-        $componentReport
+        Get-PESystemRepositoryBasedUpdateList -iDRACSession $iDRACSession -Verbose
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+function Get-PESystemRepositoryBasedUpdateList
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory)]
+        $iDRACSession
+    )
+
+    $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_SoftwareInstallationService";Name="DCIM:SoftwareUpdate";}
+    $instance = New-CimInstance -ClassName DCIM_SoftwareInstallationService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
+        
+    $returnXml = [xml] (Invoke-CimMethod -InputObject $instance -MethodName GetRepoBasedUpdateList -CimSession $iDRACSession).PackageList
+
+    $componentReport = @()
+    foreach ($instance in $returnXml.Cim.MESSAGE.SIMPLEREQ.'VALUE.NAMEDINSTANCE'.INSTANCENAME)
+    {
+        $propertyHash = [Ordered] @{}
+        $propertyHash.Add('ComponentName',$instance.PROPERTY.Where({$_.Name -eq 'DisplayName'}).Value)
+        $propertyHash.Add('UpdateVersion',$instance.PROPERTY.Where({$_.Name -eq 'PackageVersion'}).Value)
+        $propertyHash.Add('InstalledVersion',$instance.'Property.array'.Where({$_.Name -eq 'ComponentInstalledVersion'}).'Value.Array'.Value)
+        $componentReport += $propertyHash
+    }
+    $componentReport
+}
+
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER RebootJobType
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function New-PESystemRebootJob
 {
     [CmdletBinding()]
