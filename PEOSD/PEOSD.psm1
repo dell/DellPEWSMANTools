@@ -1,4 +1,20 @@
-﻿Function Get-PEDriverPackInformation {
+﻿<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+Function Get-PEDriverPackInformation {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory, 
@@ -64,6 +80,22 @@
 #    }
 #}
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Set-PEBootToPXE
 {
     [CmdletBinding()]
@@ -94,6 +126,22 @@ function Set-PEBootToPXE
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Set-PEBootToHD
 {
     [CmdletBinding()]
@@ -124,6 +172,22 @@ function Set-PEBootToHD
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PEHostMACInformation
 {
     [CmdletBinding()]
@@ -154,6 +218,43 @@ function Get-PEHostMACInformation
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER IPAddress
+Parameter description
+
+.PARAMETER ShareName
+Parameter description
+
+.PARAMETER ImageName
+Parameter description
+
+.PARAMETER Credential
+Parameter description
+
+.PARAMETER ShareType
+Parameter description
+
+.PARAMETER HashType
+Parameter description
+
+.PARAMETER HashValue
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Connect-PERFSISOImage
 {
     [CmdletBinding()]
@@ -214,6 +315,22 @@ function Connect-PERFSISOImage
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PERFSISOImageConnectionInformation
 {
     [CmdletBinding()]
@@ -239,6 +356,22 @@ function Get-PERFSISOImageConnectionInformation
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PENetworkISOImageConnectionInformation
 {
     [CmdletBinding()]

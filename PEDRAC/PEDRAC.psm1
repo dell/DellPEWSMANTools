@@ -64,6 +64,22 @@ function New-PEDRACSession
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PEDRACInformation
 {
     [CmdletBinding()]
@@ -102,6 +118,28 @@ function Get-PEDRACInformation
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER AttributeDisplayName
+Parameter description
+
+.PARAMETER GroupDisplayName
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function Get-PEDRACAttribute
 {
     [CmdletBinding()]
@@ -165,6 +203,34 @@ function Get-PEDRACAttribute
     }
 }
 
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER iDRACSession
+Parameter description
+
+.PARAMETER Force
+Parameter description
+
+.PARAMETER DRACConfig
+Parameter description
+
+.PARAMETER SSLConfig
+Parameter description
+
+.PARAMETER ResetType
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 Function Reset-PEDRAC 
 {
     [CmdletBinding(SupportsShouldProcess=$true,
