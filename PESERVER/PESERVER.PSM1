@@ -1381,7 +1381,9 @@ Function Wait-PEConfigurationJob
         $PercentComplete = $JobStatus.PercentComplete
     }
     
-    while (($jobstatus.JobStatus -like 'Running' -or $jobstatus.JobStatus -like '*Progress*' -or $jobstatus.JobStatus -like '*ready*' -or $jobstatus.JobStatus -like '*pending*'))
+    while (($jobstatus.JobStatus -like 'Running') -or ($jobstatus.JobStatus -like '*Progress*') -or 
+        ($jobstatus.JobStatus -like '*ready*') -or ($jobstatus.JobStatus -like '*pending*') -or 
+        ($jobstatus.JobStatus -like '*downloading*'))
     {
         $jobstatus = Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_LifecycleJob" -Namespace "root/dcim" -Query "SELECT InstanceID,JobStatus,Message,PercentComplete FROM DCIM_LifecycleJob Where InstanceID='$JobID'"
         if ($jobstatus.JobStatus -notlike '*Failed*') 
