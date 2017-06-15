@@ -305,8 +305,8 @@ function Set-PEBIOSAttribute
             {
                 Write-Verbose "setting PEBIOS attribute information ..."
 
-                #Check if the AttributeValue falls in the same set as the PossibleValues
-                if ($attribute.PossiblesValues -contains $AttributeValue)
+                #Check if the AttributeValue falls in the same set as the PossibleValues by calling the helper function
+                if (TestPossibleValuesContainAttributeValues -PossibleValues $attribute.PossibleValues -AttributeValues $AttributeValue )
                 {
                     try
                     {
