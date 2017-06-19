@@ -1,26 +1,4 @@
-﻿<#
-.Synopsis
-   Creates a new CIM session for a Dell Remote Access Controller (DRAC)
-.DESCRIPTION
-   This function takes IPAddress and Credential as parameters and creates a new CIM Session for a DRAC. This function returns the iDRACSession.
-.EXAMPLE
-   The following example takes IP address strings as pipeline input and creates iDRACSessions and returns the session objects
-   $iDRACSession = '10.10.10.120', '10.10.10.121', '10.10.10.122' | New-PEDRACSession -Credential (Get-Credential)
-
-   #Use $iDRACSession with cmdlets
-   Get-PESystemInformation -iDRACSession $iDRACSession
-.EAMPLE
-    The following example shows setting the timeout value for session creation to 120 seconds
-    $Credential = Get-Credential
-    New-PEDRACSession -IPAddress 10.10.10.121 -Credential $Credential -MaxTimeout 120
-.INPUTS
-   IPAddress - IP Address of the iDRAC
-   Credential - Credentials to authenticate to iDRAC
-   MaxTimeout - Sets the timeout value for creating the session. The default value is 60 seconds
-.OUTPUTS
-   Microsoft.Management.Infrastructure.CimSession
-#>
-function New-PEDRACSession
+﻿function New-PEDRACSession
 {
     [CmdletBinding()]
     [OutputType([Microsoft.Management.Infrastructure.CimSession])]
@@ -64,22 +42,6 @@ function New-PEDRACSession
     }
 }
 
-<#
-.SYNOPSIS
-Short description
-
-.DESCRIPTION
-Long description
-
-.PARAMETER iDRACSession
-Parameter description
-
-.EXAMPLE
-An example
-
-.NOTES
-General notes
-#>
 function Get-PEDRACInformation
 {
     [CmdletBinding()]
@@ -118,28 +80,6 @@ function Get-PEDRACInformation
     }
 }
 
-<#
-.SYNOPSIS
-Short description
-
-.DESCRIPTION
-Long description
-
-.PARAMETER iDRACSession
-Parameter description
-
-.PARAMETER AttributeDisplayName
-Parameter description
-
-.PARAMETER GroupDisplayName
-Parameter description
-
-.EXAMPLE
-An example
-
-.NOTES
-General notes
-#>
 function Get-PEDRACAttribute
 {
     [CmdletBinding()]
@@ -203,34 +143,6 @@ function Get-PEDRACAttribute
     }
 }
 
-<#
-.SYNOPSIS
-Short description
-
-.DESCRIPTION
-Long description
-
-.PARAMETER iDRACSession
-Parameter description
-
-.PARAMETER Force
-Parameter description
-
-.PARAMETER DRACConfig
-Parameter description
-
-.PARAMETER SSLConfig
-Parameter description
-
-.PARAMETER ResetType
-Parameter description
-
-.EXAMPLE
-An example
-
-.NOTES
-General notes
-#>
 Function Reset-PEDRAC 
 {
     [CmdletBinding(SupportsShouldProcess=$true,
@@ -330,22 +242,6 @@ Function Reset-PEDRAC
     }    
 }
 
-<#
-.Synopsis
-   This cmdlets gets the DRAC privilge value from specified privilige string(s)
-.DESCRIPTION
-   This cmdlets gets the DRAC privilge value from specified privilige string(s)
-.EXAMPLE
-    The following example gets the special privilege value for the Operator privilege
-    Get-PEDRACPrivilge -SpecialPrivilege Operator
-.EXAMPLE
-   The following example gets the grouped privilege value from a set of privilege strings
-   
-   Get-PEDRACPrivilege -GroupedPrivilege Login,Configure,SystemControl,AccessVirtualMedia
-.INPUTS
-    GroupedPrivilege - Specifies an array of string values from the set 'Login','Configure','ConfigureUser','Logs','SystemControl','AccessVirtualConsole','AccessVirtualMedia','SystemOperation','Debug'
-    SpecialPrivilege - Specifies a single string value from the set 'Admin','ReadOnly','Operator'
-#>
 Function Get-PEDRACPrivilege 
 {
     [CmdletBinding()]
@@ -391,46 +287,6 @@ Function Get-PEDRACPrivilege
     }
 }
 
-<#
-.Synopsis
-   Configures the Active Directory Role Group.
-.DESCRIPTION
-   The Set-PEADRoleGroup cmdlet creates the Active Directory Role Group or modifies an exisiting Active Directory Role Group.
-   The cmdlet takes in a session variable which is created by using the New-PEDRACSession cmdlet.
-   The Role Group number needs to be given in order create or modify any or all of Group name, Domain name or Privilege.
-   To know what privilege number needs to be set, use the Get-PEDRACPrivilege cmdlet.
-   The cmdlet will Throw an error if the configuration fails.
-
-.EXAMPLE
-PS C:\Windows\system32> Set-PEADRoleGroup -session $iDRACSession -roleGroupNumber 1 -groupName ABC -domainName DOMAIN -privilege 511
-True
-
-   This command will configure the Active Directory Role Group with Group name ABC, Domain name DOMAIN and privilege 511
-
-.PARAMETER iDRACSession
-The session object created by New-PEDRACSession.
-
-.PARAMETER roleGroupNumber
-Role Group Number.
-
-.PARAMETER groupName
-Group Name.
-
-.PARAMETER domainName
-Domain Name.
-
-.PARAMETER privilege
-Privilege level (0-511).
-
-.PARAMETER Wait
-Waits for the job to complete.
-
-.PARAMETER Passthru
-Returns the Job object without waiting.
-
-.INPUTS
-   iDRACSession, configuration parameters
-#>
 function Set-PEADRoleGroup
 {
     [CmdletBinding(DefaultParameterSetName='General',  
@@ -576,78 +432,6 @@ function Set-PEADRoleGroup
     }
 }
 
-<#
-.Synopsis
-   Configures the common Active Directory settings.
-.DESCRIPTION
-   The Set-PECommonADSetting cmdlet configures the Active Directory .
-   The cmdlet takes in a session variable which is created by using the New-PEDRACSession cmdlet.
-   The cmdlet can configure the user domain , domain controller server addresses.
-   The cmdlet can either enable or disable the certificate validation.
-   The cmdlet can either enable or disable the Active directory.
-   The cmdlet will Throw an error if the configuration fails.
-
-.PARAMETER iDRACSession
-The session object created by New-PEDRACSession.
-
-.PARAMETER userDomainName
-User Domain Name.
-
-.PARAMETER domainControllerServerAddress1
-Domain Controller Server Ip Address 1.
-
-.PARAMETER domainControllerServerAddress2
-Domain Controller Server Ip Address 2.
-
-.PARAMETER domainControllerServerAddress3
-Domain Controller Server Ip Address 3.
-
-.PARAMETER enableCertificateValidation
-Enable Certificate Validation.
-
-.PARAMETER disableCertificateValidation
-Disable Certificate Validation.
-
-.PARAMETER enableAD
-Enable Active Directory.
-
-.PARAMETER disableAD
-Disable Active Directory.
-
-.PARAMETER Wait
-Waits for the job to complete.
-
-.PARAMETER Passthru
-Returns the Job object without waiting.
-
-.EXAMPLE
-PS C:\Dell_PSCmdlets\Export-TechSupportReport> Set-PECommonADSetting -iDRACSession $session -enableAD
-
-This will enable Active Directory
-
-.EXAMPLE
-PS C:\Dell_PSCmdlets\Export-TechSupportReport> Set-PECommonADSetting -iDRACSession $session -disableAD
-
-This will disable Active Directory
-
-.EXAMPLE
-PS C:\Dell_PSCmdlets\Export-TechSupportReport> Set-PECommonADSetting -iDRACSession $session -enableCertificateValidation -enableAD
-
-This will enable Active Directory as well as enable Certificate Validation
-
-.EXAMPLE
-PS C:\Dell_PSCmdlets\Export-TechSupportReport> Set-PECommonADSetting -iDRACSession $session -userDomainName <domainName>
-
-This will set the user domain name to the value specified
-
-.EXAMPLE
-PS C:\Dell_PSCmdlets\Export-TechSupportReport> Set-PECommonADSetting -iDRACSession $session -userDomainName <domainName> -domainControllerServerAddress1 <address1> -enableCertificateValidation -enableAD
-
-This will set the user domain name and domain Controller Server Address 1 to the values specified, enable Active Directory and Certificate Validation
-
-.INPUTS
-   iDRACSession, configuration parameters
-#>
 function Set-PECommonADSetting
 {
     [CmdletBinding(DefaultParameterSetName='General')]
@@ -847,58 +631,6 @@ function Set-PECommonADSetting
     }
 }
 
-<#
-.Synopsis
-   Configure an iDRAC user identified by the User number
-.DESCRIPTION
-   The Set-PEDRACUser cmdlet can create a new iDRAC user or modify the existing User using the Usernumber.
-   The user can be enabled or disabled. Also the user privileges can be set.
-   The cmdlet takes in a session variable which is created by using the New-PEDRACSession cmdlet.
-   The privilege number needs to be given in order to set the privilege for the user. To know what privilege number needs to be set, use the Get-PEDRACPrivilege cmdlet.
-   
-   The cmdlet will Throw an error if the configuration fails.
-   
-.PARAMETER iDRACSession
-The session object created by New-PEDRACSession.
-
-.PARAMETER userNumber
-User Number.
-
-.PARAMETER credential
-Credential (Username and Password).
-
-.PARAMETER privilege
-Privilege level (0-511).
-
-.PARAMETER enable
-Enable the user.
-
-.PARAMETER disable
-Disable the user.
-
-.PARAMETER Wait
-Waits for the job to complete.
-
-.PARAMETER Passthru
-Returns the Job object without waiting.
-
-
-.EXAMPLE
-PS C:\Windows\System32> Set-PEDRACUser -session $iDRACSession -userNumber 5 -enable
-   This command will enable the user identified by iDRAC.Embedded.1#Users.5
-
-.EXAMPLE
-PS C:\Windows\System32> Set-PEDRACUser -session $iDRACSession -userNumber 5 -disable
-   This command will disable the user identified by iDRAC.Embedded.1#Users.5
-
-.EXAMPLE
- PS C:\Windows\System32> Set-PEDRACUser -session $iDRACSession -userNumber 3 -credential (Get-Credential) -privilege 511 -enable -wait
-   This command will configure the user identified by iDRAC.Embedded.1#Users.3 with Username and Password as supplied in the get-credential prompt.
-   This user is enabled and given full privileges. The cmdlet will wait for the job to complete.
-
-.INPUTS
-   iDRACSession, Configuration paremeters
-#>
 function Set-PEDRACUser
 {
     [CmdletBinding(DefaultParameterSetName='General',  
@@ -1077,41 +809,6 @@ function Set-PEDRACUser
     }
 }
 
-<#
-.Synopsis
-   Configures the Standard Schema settings.
-.DESCRIPTION
-   The Set-PEStandardSchemaSetting cmdlet configures the Standard Schema settings for Active Directory enablement.
-   The cmdlet takes in a session variable which is created by using the New-PEDRACSession cmdlet.
-   The cmdlet can configure either or all Global Catalog Server Addresses.
-   The cmdlet will Throw an error if it fails to set the values.
-
-.PARAMETER iDRACSession
-The session object created by New-PEDRACSession.
-
-.PARAMETER globalCatalogServerAddress1
-Gloabl Catalog Server IP Address 1.
-
-.PARAMETER globalCatalogServerAddress2
-Gloabl Catalog Server IP Address 2.
-
-.PARAMETER globalCatalogServerAddress3
-Gloabl Catalog Server IP Address 3.
-
-.PARAMETER Wait
-Waits for the job to complete.
-
-.PARAMETER Passthru
-Returns the Job object without waiting.
-
-.EXAMPLE
-   Set-Set-PEStandardSchemaSetting -session $iDRACSession -globalCatalogServerAddress1 $address1 -globalCatalogServerAddress2 $address2 -globalCatalogServerAddress3 $address3
-
-   This command will configure the standard schema for the three addresses specified.
-
-.INPUTS
-   iDRACSession, configuration parameters
-#>
 function Set-PEStandardSchemaSetting
 {
     [CmdletBinding(DefaultParameterSetName='General')]
@@ -1228,55 +925,7 @@ function Set-PEStandardSchemaSetting
     }
 }
 
-<#
-.Synopsis
-   Gets the list of all AD Groups
-.DESCRIPTION
-   The Get-PEADGroupInfo cmdlet lists out details about all the AD Groups for the iDRAC specified. The output is a dictionary of AD Groups.
-   The cmdlet will Throw an error if it fails to retrieve the information.
 
-.PARAMETER iDRACSession
-The session object created by New-PEDRACSession.
-
-.EXAMPLE
-   Get-PEADGroupInfo -session $iDRACSession
-Name                           Value                                                                                                                                         
-----                           -----                                                                                                                                         
-ADGroup1                       {Domain, Name, Privilege}
-ADGroup2                       {Domain, Name, Privilege}                                                                                                                     
-ADGroup3                       {Domain, Name, Privilege}                                                                                                                     
-ADGroup4                       {Domain, Name, Privilege}                                                                                                                     
-ADGroup5                       {Domain, Name, Privilege}
-
-   This command will show all the AD Groups and the values in a map which are Group Name, Domain and Privilege.
-.EXAMPLE
-     $adGroups = Get-PEADGroupInfo $iDRACSession
-
-     $adGroups.ADGroup2
-
-Name                           Value                                                                                                                                         
-----                           -----                                                                                                                                         
-Domain                                                                                                                                                                       
-Name                                                                                                                                                                         
-Privilege                      0                                     
-        
-
-   This command gets the hashmap in the variable $adGroups. $users.User2 lists the UserName, Enable and Privilege and its corresponding Values.
-.EXAMPLE
-     $adGroups = Get-PEADGroupInfo $iDRACSession
-
-     $adGroups.ADGroup2.Privilege
-
-     0                               
-
-   This command gets the hashmap in the variable $adGroups. $adGroups.ADGroup2.Privilege outputs the Privilege for ADGroup2 which is 0.
-
-.INPUTS
-   iDRACSession
-.OUTPUTS
-   System.Object
-   This command returns a Hashtable
-#>
 function Get-PEADGroupInfo
 {
     [CmdletBinding(DefaultParameterSetName='General',  
@@ -1350,68 +999,6 @@ function Get-PEADGroupInfo
     }
 }
 
-<#
-.Synopsis
-   Gets the list of all iDRAC users
-.DESCRIPTION
-   The Get-PEDRACUser cmdlet lists out all the iDRAC users for the session given. The output is a hashmap of users.
-   The cmdlet will Throw an error if it fails to retrieve the information.
-
-.PARAMETER iDRACSession
-The session object created by New-PEDRACSession.
-
-
-.EXAMPLE
-   Get-PEDRACUser -session $iDRACSession
-Name                           Value                                                                                             
-----                           -----                                                                                             
-User11                         {UserName, Enable, Privilege}                                                                     
-User9                          {UserName, Enable, Privilege}                                                                     
-User10                         {UserName, Enable, Privilege}                                                                     
-User13                         {UserName, Enable, Privilege}                                                                     
-User3                          {UserName, Enable, Privilege}                                                                     
-User8                          {UserName, Enable, Privilege}                                                                     
-User12                         {UserName, Enable, Privilege}                                                                     
-User16                         {UserName, Enable, Privilege}                                                                     
-User15                         {UserName, Enable, Privilege}                                                                     
-User1                          {UserName, Enable, Privilege}                                                                     
-User5                          {UserName, Enable, Privilege}                                                                     
-User2                          {UserName, Enable, Privilege}                                                                     
-User6                          {UserName, Enable, Privilege}                                                                     
-User7                          {UserName, Enable, Privilege}                                                                     
-User4                          {UserName, Enable, Privilege}                                                                     
-User14                         {UserName, Enable, Privilege}                                                                     
-
-
-   This command will show all the Users and the values in a map which are UserName, Enable and Privilege.
-.EXAMPLE
-     $users = Get-PEDRACUser $iDRACSession
-
-     $users.User2
-
-Name                           Value                                                                                             
-----                           -----                                                                                             
-UserName                       root                                                                                              
-Enable                         Enabled                                                                                           
-Privilege                      511                                   
-        
-
-   This command gets the hashmap in the variable $users. $users.User2 lists the UserName, Enable and Privilege and its corresponding Values.
-.EXAMPLE
-     $users = Get-PEDRACUser $iDRACSession
-
-     $users.User2.Privilege
-
-    511                               
-
-   This command gets the hashmap in the variable $users. $users.User2.Privilege lists the Privilege for User2 which is 511.
-
-.INPUTS
-   iDRACSession
-.OUTPUTS
-   System.Object
-   This command returns a Hashtable
-#>
 function Get-PEDRACUser
 {
     [CmdletBinding(DefaultParameterSetName='General',  
@@ -1507,49 +1094,6 @@ function Get-PEDRACUser
     }
 }
 
-<#
-.Synopsis
-   Imports a Certificate.
-.DESCRIPTION
-   The Import-Certificate cmdlet imports the certificate given by the certificatefilename.
-   The cmdlet takes in a session variable which is created by using the New-PEDRACSession cmdlet.
-   The cetificateFileName is the path to the Certificate file. A passphrase may or may not be required depending on the certificate.
-   The cmdlet can import either the WebServer Certificate or AD Service Certificate or the Custom Signing Certificate.
-   The cmdlet will Throw an error if the import fails.
-
-.PARAMETER iDRACSession
-The session object created by New-PEDRACSession.
-
-.PARAMETER certificateFileName
-The complete path to the certificate file.
-
-.PARAMETER passphrase
-Passphrase for the certificate file.
-
-.PARAMETER webServerCertificate
-Option to identify the certificate as webServerCertificate.
-
-.PARAMETER ADServiceCertificate
-Option to identify the certificate as ADServiceCertificate.
-
-.PARAMETER customSigningCertificate
-Option to identify the certificate as customSigningCertificate.
-
-.PARAMETER Wait
-Waits for the job to complete.
-
-.PARAMETER Passthru
-Returns the Job object without waiting.
-
-.EXAMPLE
-   Import-PECertificate -session $iDRACSession -certificateFileName $certfile -passphrase pass -customSigningCertificate 
-
-
-   This command will import the Custom Signing Certificate for the specified iDRAC using the passphrase pass
-
-.INPUTS
-   iDRACSession, certificateFileName, passphrase, certificateType(as option)
- #>
 function Import-PECertificate
 {
     [CmdletBinding(DefaultParameterSetName='General',  
@@ -1714,36 +1258,6 @@ function Import-PECertificate
     }
 }
 
-<#
-.Synopsis
-   Discovers all iDRACs and return a hashmap contained the discovered iDRACs.
-.DESCRIPTION
-   The Find-PEDRAC cmdlet accepts a range of IP addresses and up to three Username,Password lists. The IP start range and end range is a mandatory parameter. Atlease one Username and password list is required for the cmdlet.
-   The cmdlet returns a hashtables where, the IP address is the key and its value is another hashtable with the system product information as the key/value pairs. 
-
-.PARAMETER ipStartRange
-Starting IP of the range.
-
-.PARAMETER ipEndRange
-Ending IP of the range.
-
-.PARAMETER credential
-a PSCredential object, will prompt for credential if kept blank.
-
-.PARAMETER deepDiscover
-This parameter returns additional details for each discovered server, including Service Tag, Model, and Power State.
-
-.EXAMPLE
-PS C:\Windows\system32> $dracs = Find-PEDRAC -ipStartRange 192.168.0.1 -ipEndRange 192.168.0.10 -credential (Get-Credential) -deepDiscover
-    
-This command returns a hashmap containing all discovered IPs into $drac with IP address as key. The contents of the hashtable will depend on the -deepDiscover switch.
-
-.INPUTS
-   ipStartRange, ipEndRange, credential, deepDiscover(optional)
-.OUTPUTS
-   System.Object
-   This command returns a Hashtable
-#>
 Function Find-PEDRAC
 {
     [CmdletBinding(DefaultParameterSetName='General',  
@@ -1943,5 +1457,3 @@ Function Find-PEDRAC
             }
     }
 }
-
-Export-ModuleMember -Function *
