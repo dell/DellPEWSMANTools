@@ -3,5 +3,22 @@ repo_url: https://github.com/rchaganti/DellPEWSManTools
 theme: readthedocs
 pages:
   - Home: index.md
-  - PowerEdge BIOS:
+  - BIOS:
     - Get-PEBIOSAttribute: PEBIOS/Get-PEBIOSAttribute.md
+    - Set-PEBIOSAttribute: PEBIOS/Set-PEBIOSAttribute.md
+    - Get-PEBootOrder: PEBIOS/Get-PEBootOrder.md
+    - Get-PESystemOneTimeBootSetting: PEBIOS/Get-PESystemOneTimeBootSetting.md
+    - Set-PESystemOneTimeBootSetting: PEBIOS/Set-PESystemOneTimeBootSetting.md
+  - DRAC:
+    - Find-PEDRAC: PEDRAC/Find-PEDRAC.md
+    - Get-PEADGroupInfo: PEDRAC/Get-PEADGroupInfo
+    - Get-PEDRACAttribute: PEDRAC/Get-PEDRACAttribute
+    - Get-PEDRCInformation: PEDRAC/Get-PEDRCInformation
+    - Get-PEDRACPrivilege: PEDRAC/Get-PEDRACPrivilege
+    - Get-PEDRACUser: PEDRAC/Get-PEDRACUser
+    - Import-PECetificate: PEDRAC/Import-PECetificate
+    - New-PEDRACSession: PEDRAC/New-PEDRACSession
+    - Reset-PEDRAC: PEDRAC/Reset-PEDRAC
+    - Set-PEADRoleGroup: PEDRAC/Set-PEADRoleGroup
+    - Set-PECommonADSetting: PEDRAC/Set-PECommonADSetting
+    - Set-PEStandardSchemaSetting: PEDRAC/Set-PEStandardSchemaSetting

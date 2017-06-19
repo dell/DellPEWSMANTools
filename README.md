@@ -3,4 +3,4 @@
 [![Documentation Status](http://readthedocs.org/projects/dellpewsmantools/badge/?version=latest)](http://dellpewsmantools.readthedocs.io/en/latest/?badge=latest)
 
 # DellPEWSMANTools
-PowerShell Tools for Dell PowerEdge Server Management (WS-MAN)
+PowerShell Tools for Dell EMC PowerEdge Server Management (WS-MAN)
