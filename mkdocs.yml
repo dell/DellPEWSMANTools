@@ -11,14 +11,14 @@ pages:
     - Set-PESystemOneTimeBootSetting: PEBIOS/Set-PESystemOneTimeBootSetting.md
   - DRAC:
     - Find-PEDRAC: PEDRAC/Find-PEDRAC.md
-    - Get-PEADGroupInfo: PEDRAC/Get-PEADGroupInfo
-    - Get-PEDRACAttribute: PEDRAC/Get-PEDRACAttribute
-    - Get-PEDRCInformation: PEDRAC/Get-PEDRCInformation
-    - Get-PEDRACPrivilege: PEDRAC/Get-PEDRACPrivilege
-    - Get-PEDRACUser: PEDRAC/Get-PEDRACUser
-    - Import-PECetificate: PEDRAC/Import-PECetificate
-    - New-PEDRACSession: PEDRAC/New-PEDRACSession
-    - Reset-PEDRAC: PEDRAC/Reset-PEDRAC
-    - Set-PEADRoleGroup: PEDRAC/Set-PEADRoleGroup
-    - Set-PECommonADSetting: PEDRAC/Set-PECommonADSetting
-    - Set-PEStandardSchemaSetting: PEDRAC/Set-PEStandardSchemaSetting
+    - Get-PEADGroupInfo: PEDRAC/Get-PEADGroupInfo.md
+    - Get-PEDRACAttribute: PEDRAC/Get-PEDRACAttribute.md
+    - Get-PEDRCInformation: PEDRAC/Get-PEDRCInformation.md
+    - Get-PEDRACPrivilege: PEDRAC/Get-PEDRACPrivilege.md
+    - Get-PEDRACUser: PEDRAC/Get-PEDRACUser.md
+    - Import-PECetificate: PEDRAC/Import-PECetificate.md
+    - New-PEDRACSession: PEDRAC/New-PEDRACSession.md
+    - Reset-PEDRAC: PEDRAC/Reset-PEDRAC.md
+    - Set-PEADRoleGroup: PEDRAC/Set-PEADRoleGroup.md
+    - Set-PECommonADSetting: PEDRAC/Set-PECommonADSetting.md
+    - Set-PEStandardSchemaSetting: PEDRAC/Set-PEStandardSchemaSetting.md
