@@ -1,5 +1,7 @@
-site_name: Dell PE WSMAN Tools
+site_name: Dell EMC PE WSMAN Tools
 repo_url: https://github.com/rchaganti/DellPEWSManTools
 theme: readthedocs
 pages:
   - Home: index.md
+  - PowerEdge BIOS:
+    - Get-PEBIOSAttribute: PEBIOS/Get-PEBIOSAttribute.md
