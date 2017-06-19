@@ -16,7 +16,7 @@ pages:
     - Get-PEDRCInformation: PEDRAC/Get-PEDRACInformation.md
     - Get-PEDRACPrivilege: PEDRAC/Get-PEDRACPrivilege.md
     - Get-PEDRACUser: PEDRAC/Get-PEDRACUser.md
-    - Import-PECetificate: PEDRAC/Import-PECetificate.md
+    - Import-PECertificate: PEDRAC/Import-PECertificate.md
     - New-PEDRACSession: PEDRAC/New-PEDRACSession.md
     - Reset-PEDRAC: PEDRAC/Reset-PEDRAC.md
     - Set-PEADRoleGroup: PEDRAC/Set-PEADRoleGroup.md
