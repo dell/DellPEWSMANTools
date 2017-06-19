@@ -1,0 +1,5 @@
+site_name: Dell PE WSMAN Tools
+repo_url: https://github.com/rchaganti/DellPEWSManTools
+theme: readthedocs
+pages:
+  - Home: index.md
