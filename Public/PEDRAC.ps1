@@ -48,11 +48,9 @@ function Get-PEDRACInformation
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Alias("s")] 
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()] 
         $iDRACSession
     )
 
@@ -86,12 +84,9 @@ function Get-PEDRACAttribute
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-        )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter()]
@@ -152,21 +147,13 @@ Function Reset-PEDRAC
     Param
     (
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
                    ParameterSetName='General')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
                    ParameterSetName='DRAC')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
                    ParameterSetName='SSL')]
-        [Alias("s")] 
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()] 
         $iDRACSession,
 
         [Parameter(ParameterSetName='General')]
@@ -216,29 +203,27 @@ Function Reset-PEDRAC
 
     Process
     {
-        foreach ($session in $iDRACSession) 
+        if ($pscmdlet.ShouldProcess($iDRACsession.ComputerName, $ResetMethod)) 
         {
-            if ($pscmdlet.ShouldProcess($Session.ComputerName, $ResetMethod)) 
+            Write-Verbose "Performing ${ResetMethod} on the target system $($iDRACsession)"
+            if ($pscmdlet.ParameterSetName -eq 'DRAC' -or $pscmdlet.ParameterSetName -eq 'General') 
             {
-                Write-Verbose "Performing ${ResetMethod} on the target system $($Session)"
-                if ($pscmdlet.ParameterSetName -eq 'DRAC' -or $pscmdlet.ParameterSetName -eq 'General') 
-                {
-                    $return = Invoke-CimMethod -InputObject $instance -CimSession $session -MethodName $ResetMethod -Arguments $Arguments
-                }
-                else 
-                {
-                    $return = Invoke-CimMethod -InputObject $instance -CimSession $session -MethodName $ResetMethod
-                }
-                if ($return -ne 0) 
-                {
-                    Write-Error $return.Message
-                } 
-                else 
-                {
-                    Write-Verbose 'Reset initiated ...'
-                }
+                $return = Invoke-CimMethod -InputObject $instance -CimSession $iDRACsession -MethodName $ResetMethod -Arguments $Arguments
+            }
+            else 
+            {
+                $return = Invoke-CimMethod -InputObject $instance -CimSession $iDRACsession -MethodName $ResetMethod
+            }
+            if ($return -ne 0) 
+            {
+                Write-Error $return.Message
+            } 
+            else 
+            {
+                Write-Verbose 'Reset initiated ...'
             }
         }
+        
     }    
 }
 
@@ -295,25 +280,15 @@ function Set-PEADRoleGroup
     Param
     (
         # iDRAC Session Object
-        [Parameter(Mandatory=$true, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory=$true
                    Position=0,
                    ParameterSetName='General')]
-        [Parameter(Mandatory=$true, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory=$true,
                    Position=0,
                    ParameterSetName='Wait')]
-        [Parameter(Mandatory=$true, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory=$true,
                    Position=0,
                    ParameterSetName='Passthru')]
-        [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [Alias("s")] 
         $iDRACSession,
@@ -403,29 +378,27 @@ function Set-PEADRoleGroup
             Throw "ERROR: No arguments passed."
         }
     }
-    Process
+    Process 
     {
-        foreach ($session in $iDRACSession) 
-        {
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $session -Arguments $params 2>&1
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
 
-            if ($responseData.ReturnValue -eq 4096)
-             {
-                if ($Passthru) 
-                {
-                    $responseData
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $Session -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Applying Configuration Changes to AD RoleGroup for $($session.ComputerName)"
-                    Write-Verbose "AD Role Group Settings Successfully Applied"
-                }
-            } 
-            else 
+        if ($responseData.ReturnValue -eq 4096)
             {
-                Throw "Job Creation failed with error: $($responseData.Message)"
+            if ($Passthru) 
+            {
+                $responseData
+            } 
+            elseif ($Wait) 
+            {
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Applying Configuration Changes to AD RoleGroup for $($iDRACsession.ComputerName)"
+                Write-Verbose "AD Role Group Settings Successfully Applied"
             }
+        } 
+        else 
+        {
+            Throw "Job Creation failed with error: $($responseData.Message)"
         }
+        
     }
     End
     {
@@ -438,24 +411,14 @@ function Set-PECommonADSetting
     Param
     (
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
                    Position=0,
                    ParameterSetName='General')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
                    Position=0,
                    ParameterSetName='Wait')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
                    Position=0,
                    ParameterSetName='Passthru')]
-        [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [Alias("s")] 
         $iDRACSession,
@@ -605,26 +568,25 @@ function Set-PECommonADSetting
     }
     Process
     {
-        foreach ($session in $iDRACSession) 
+
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACSession -Arguments $params 2>&1
+        if ($responseData.ReturnValue -eq 4096) 
         {
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $session -Arguments $params 2>&1
-            if ($responseData.ReturnValue -eq 4096) 
+            if ($Passthru) 
             {
-                if ($Passthru) 
-                {
-                    $responseData
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $Session -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Applying Configuration Changes to Comman AD Settings for $($session.ComputerName)"
-                    Write-Verbose "Changes to Common AD Settings applied successfully"
-                }
+                $responseData
             } 
-            else 
+            elseif ($Wait) 
             {
-                Throw "Job Creation failed with error: $($responseData.Message)"
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Applying Configuration Changes to Comman AD Settings for $($iDRACsession.ComputerName)"
+                Write-Verbose "Changes to Common AD Settings applied successfully"
             }
+        } 
+        else 
+        {
+            Throw "Job Creation failed with error: $($responseData.Message)"
         }
+
     }
     End
     {
@@ -639,25 +601,15 @@ function Set-PEDRACUser
     Param
     (
         # iDRAC Session Object
-        [Parameter(Mandatory=$true, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory=$true,
                    Position=0,
                    ParameterSetName='General')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Wait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Passthru')]
-        [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [Alias("s")] 
         $iDRACSession,
@@ -785,24 +737,21 @@ function Set-PEDRACUser
     }
     Process
     {
-        foreach ($session in $iDRACSession) 
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
+        if ($responseData.ReturnValue -eq 4096) 
         {
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $session -Arguments $params 2>&1
-            if ($responseData.ReturnValue -eq 4096) 
+            if ($Passthru) 
             {
-                if ($Passthru) 
-                {
-                    $responseData
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $Session -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring iDRAC user for $($session.ComputerName)"
-                    Write-Verbose "iDRAC User configured successfully"
-                }
-            } else {
-                Throw "Job Creation failed with error: $($responseData.Message)"
+                $responseData
+            } 
+            elseif ($Wait) 
+            {
+                Wait-PEConfigurationJob -iDRACSession $iDRACsession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring iDRAC user for $($iDRACsession.ComputerName)"
+                Write-Verbose "iDRAC User configured successfully"
             }
-        }            
+        } else {
+            Throw "Job Creation failed with error: $($responseData.Message)"
+        }
     }
     End
     {
@@ -815,24 +764,14 @@ function Set-PEStandardSchemaSetting
     Param
     (
         [Parameter(Mandatory=$true, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
                    Position=0,
                    ParameterSetName='General')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
                    Position=0,
                    ParameterSetName='Wait')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
                    Position=0,
                    ParameterSetName='Passthru')]
-        [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [Alias("s")] 
         $iDRACSession,
@@ -902,25 +841,22 @@ function Set-PEStandardSchemaSetting
     }
     Process
     {
-        foreach ($session in $iDRACSession) 
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
+        if ($responseData.ReturnValue -eq 4096) 
         {
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $session -Arguments $params 2>&1
-            if ($responseData.ReturnValue -eq 4096) 
+            if ($Passthru) 
             {
-                if ($Passthru) 
-                {
-                    $responseData
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $Session -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring Standard Schema Settings for $($session.ComputerName)"
-                    Write-Verbose "Standard Schema Configured successfully"
-                }
+                $responseData
             } 
-            else 
+            elseif ($Wait) 
             {
-                Throw "Job Creation failed with error: $($responseData.Message)"
+                Wait-PEConfigurationJob -iDRACSession $iDRACsession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring Standard Schema Settings for $($iDRACsession.ComputerName)"
+                Write-Verbose "Standard Schema Configured successfully"
             }
+        } 
+        else 
+        {
+            Throw "Job Creation failed with error: $($responseData.Message)"
         }
     }
 }
@@ -935,12 +871,8 @@ function Get-PEADGroupInfo
     (
         # iDRAC Session
         [Parameter(Mandatory=$true, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
                    Position=0,
                    ParameterSetName='General')]
-        [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [Alias("s")] 
         $iDRACSession
@@ -956,41 +888,39 @@ function Get-PEADGroupInfo
             $mapofmap = @{}
         }
 
-        foreach ($session in $iDRACSession) 
+
+        Write-Verbose "Retrieving AD Group Information for $($iDRACsession.ComputerName)"
+        $map = @{}
+        $users = 1..5 | % {"ADGroup"+$_} 
+        foreach ($user in $users)
         {
-            Write-Verbose "Retrieving AD Group Information for $($session.ComputerName)"
-            $map = @{}
-            $users = 1..5 | % {"ADGroup"+$_} 
-            foreach ($user in $users)
-            {
-                $map.$user = @{"Privilege"="";"Domain"="";"Name"=""}
-            }
+            $map.$user = @{"Privilege"="";"Domain"="";"Name"=""}
+        }
 
-            try
-            {
-                $responseData = Get-CimInstance -CimSession $session -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardAttribute" -Namespace "root/dcim" -Query 'Select CurrentValue, InstanceID from DCIM_iDRACCardAttribute where  InstanceID like "%ADGroup.%"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL" 2>&1
+        try
+        {
+            $responseData = Get-CimInstance -CimSession $iDRACsession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardAttribute" -Namespace "root/dcim" -Query 'Select CurrentValue, InstanceID from DCIM_iDRACCardAttribute where  InstanceID like "%ADGroup.%"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL" 2>&1
 
-                foreach ($resp in $responseData){
-                        $number = $resp.InstanceID.Split("#")[1].Split(".")[1]
-                        $entity = $resp.InstanceID.Split("#")[-1]
-                        $currValue = $resp.CurrentValue
-                        $key = "ADGroup"+$number
-                        $map.$key.$entity = $currValue
-                        }
-                Write-Verbose "AD Group Information for $($session.ComputerName) retrieved successfully"
-                if ( $iDRACSession.Count -gt 1 ) 
-                {
-                    $mapofmap[$($session.ComputerName)]=$map.Clone()
-                } 
-                else 
-                {
-                    $map
-                }
-            }
-            catch
+            foreach ($resp in $responseData){
+                    $number = $resp.InstanceID.Split("#")[1].Split(".")[1]
+                    $entity = $resp.InstanceID.Split("#")[-1]
+                    $currValue = $resp.CurrentValue
+                    $key = "ADGroup"+$number
+                    $map.$key.$entity = $currValue
+                    }
+            Write-Verbose "AD Group Information for $($iDRACsession.ComputerName) retrieved successfully"
+            if ( $iDRACSession.Count -gt 1 ) 
             {
-                Throw "Could Not Retrieve AD Group Information for $($session.ComputerName)"
+                $mapofmap[$($iDRACsession.ComputerName)]=$map.Clone()
+            } 
+            else 
+            {
+                $map
             }
+        }
+        catch
+        {
+            Throw "Could Not Retrieve AD Group Information for $($iDRACsession.ComputerName)"
         }
         if ( $iDRACSession.Count -gt 1 ) 
         {
@@ -1007,13 +937,9 @@ function Get-PEDRACUser
     Param
     (
         # iDRAC Session
-        [Parameter(Mandatory=$true, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory=$true,
                    Position=0,
                    ParameterSetName='General')]
-        [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [Alias("s")] 
         $iDRACSession
@@ -1029,63 +955,61 @@ function Get-PEDRACUser
             $mapofmap = @{}
         }
         
-        foreach ($session in $iDRACSession)
-        {
-            Write-Verbose "Retrieving iDRAC User Details for $($session.ComputerName)"
-            Try{
-                $map = @{}
-                $users = 1..16 | % {"User"+$_} 
-                foreach ($user in $users)
-                {
-                    $map.$user = @{"Privilege"="";"Enable"="";"UserName"=""}
-                }
 
-                $responseData = Get-CimInstance -CimSession $session -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardString" -Namespace "root/dcim" -Query 'Select InstanceID, CurrentValue from DCIM_iDRACCardString where InstanceID like "%#UserName"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL"
-
-                foreach ($resp in $responseData)
-                {
-                     $number = $resp.InstanceID.Split("#")[1].Split(".")[1]
-                     $currValue = $resp.CurrentValue
-                     $key = "User"+$number
-                     $map.$key.UserName = $currValue
-                }
-
-
-                $responseData = Get-CimInstance -CimSession $session -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardInteger" -Namespace "root/dcim" -Query 'Select InstanceID, CurrentValue from DCIM_iDRACCardInteger where InstanceID like "iDRAC.Embedded.1#Users%"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL"
-
-                foreach ($resp in $responseData)
-                {
-                     $number = $resp.InstanceID.Split("#")[1].Split(".")[1]
-                     $currValue = $resp.CurrentValue
-                     $key = "User"+$number
-                     $map.$key.Privilege = $currValue
-                }
-
-                $responseData = Get-CimInstance -CimSession $session -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardEnumeration" -Namespace "root/dcim" -Query 'Select InstanceID, CurrentValue from DCIM_iDRACCardEnumeration where InstanceID like "iDRAC.Embedded.1#Users%" and InstanceID like "%#Enable"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL"
-
-                foreach ($resp in $responseData)
-                {
-                     $number = $resp.InstanceID.Split("#")[1].Split(".")[1]
-                     $currValue = $resp.CurrentValue
-                     $key = "User"+$number
-                     $map.$key.Enable = $currValue
-                }
-                Write-Verbose "iDRAC User Details for $($session.ComputerName) retrieved successfully"
-
-                if ( $iDRACSession.Count -gt 1 ) 
-                {
-                    $mapofmap[$($session.ComputerName)]=$map.Clone()
-                } 
-                else 
-                {
-                    $map
-                }
-            } 
-
-            Catch 
+        Write-Verbose "Retrieving iDRAC User Details for $($iDRACsession.ComputerName)"
+        Try{
+            $map = @{}
+            $users = 1..16 | % {"User"+$_} 
+            foreach ($user in $users)
             {
-                Throw "iDRAC User Details for $($session.ComputerName) could not be retrieved"
+                $map.$user = @{"Privilege"="";"Enable"="";"UserName"=""}
             }
+
+            $responseData = Get-CimInstance -CimSession $iDRACsession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardString" -Namespace "root/dcim" -Query 'Select InstanceID, CurrentValue from DCIM_iDRACCardString where InstanceID like "%#UserName"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL"
+
+            foreach ($resp in $responseData)
+            {
+                    $number = $resp.InstanceID.Split("#")[1].Split(".")[1]
+                    $currValue = $resp.CurrentValue
+                    $key = "User"+$number
+                    $map.$key.UserName = $currValue
+            }
+
+
+            $responseData = Get-CimInstance -CimSession $iDRACsession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardInteger" -Namespace "root/dcim" -Query 'Select InstanceID, CurrentValue from DCIM_iDRACCardInteger where InstanceID like "iDRAC.Embedded.1#Users%"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL"
+
+            foreach ($resp in $responseData)
+            {
+                    $number = $resp.InstanceID.Split("#")[1].Split(".")[1]
+                    $currValue = $resp.CurrentValue
+                    $key = "User"+$number
+                    $map.$key.Privilege = $currValue
+            }
+
+            $responseData = Get-CimInstance -CimSession $iDRACsession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardEnumeration" -Namespace "root/dcim" -Query 'Select InstanceID, CurrentValue from DCIM_iDRACCardEnumeration where InstanceID like "iDRAC.Embedded.1#Users%" and InstanceID like "%#Enable"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL"
+
+            foreach ($resp in $responseData)
+            {
+                    $number = $resp.InstanceID.Split("#")[1].Split(".")[1]
+                    $currValue = $resp.CurrentValue
+                    $key = "User"+$number
+                    $map.$key.Enable = $currValue
+            }
+            Write-Verbose "iDRAC User Details for $($iDRACsession.ComputerName) retrieved successfully"
+
+            if ( $iDRACSession.Count -gt 1 ) 
+            {
+                $mapofmap[$($iDRACsession.ComputerName)]=$map.Clone()
+            } 
+            else 
+            {
+                $map
+            }
+        } 
+
+        Catch 
+        {
+            Throw "iDRAC User Details for $($iDRACsession.ComputerName) could not be retrieved"
         }
         if ( $iDRACSession.Count -gt 1 ) 
         {
@@ -1102,25 +1026,15 @@ function Import-PECertificate
     Param
     (
         # iDRAC Session
-        [Parameter(Mandatory=$true, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory=$true,
                    Position=0,
                    ParameterSetName='General')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Wait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Passthru')]
-        [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [Alias("s")] 
         $iDRACSession,
@@ -1234,26 +1148,24 @@ function Import-PECertificate
     }
     Process
     {
-        foreach ($session in $iDRACSession)
+
+        Write-Verbose "Importing Certificate to $($iDRACsession.ComputerName)"
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ImportSSLCertificate -CimSession $iDRACsession -Arguments $params 2>&1
+        if ($responseData.ReturnValue -eq 4096) 
         {
-            Write-Verbose "Importing Certificate to $($session.ComputerName)"
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ImportSSLCertificate -CimSession $session -Arguments $params 2>&1
-            if ($responseData.ReturnValue -eq 4096) 
+            if ($Passthru) 
             {
-                if ($Passthru) 
-                {
-                    $responseData
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $Session -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring Standard Schema Settings for $($session.ComputerName)"
-                    Write-Verbose "Imported Certificate to $($session.ComputerName) successfully"
-                }
+                $responseData
             } 
-            else 
+            elseif ($Wait) 
             {
-                Throw "Certificate Import to $($session.ComputerName) failed with error: $($responseData.Message)"
+                Wait-PEConfigurationJob -iDRACSession $iDRACsession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring Standard Schema Settings for $($iDRACsession.ComputerName)"
+                Write-Verbose "Imported Certificate to $($iDRACsession.ComputerName) successfully"
             }
+        } 
+        else 
+        {
+            Throw "Certificate Import to $($iDRACsession.ComputerName) failed with error: $($responseData.Message)"
         }
     }
 }

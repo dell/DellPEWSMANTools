@@ -17,12 +17,9 @@ General notes
 Function Get-PEDriverPackInformation {
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-        )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
@@ -100,12 +97,9 @@ function Set-PEBootToPXE
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-        )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession    
     )   
 
@@ -146,12 +140,9 @@ function Set-PEBootToHD
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-        )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession    
     )   
 
@@ -192,12 +183,9 @@ function Get-PEHostMACInformation
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-        )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession    
     )   
 
@@ -259,12 +247,9 @@ function Connect-PERFSISOImage
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-        )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
         
         [Parameter(Mandatory)]
@@ -335,12 +320,9 @@ function Get-PERFSISOImageConnectionInformation
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-        )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
@@ -376,12 +358,9 @@ function Get-PENetworkISOImageConnectionInformation
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-        )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 

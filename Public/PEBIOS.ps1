@@ -4,11 +4,9 @@
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
     
@@ -25,12 +23,9 @@ function Get-PEBIOSAttribute
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter()]
@@ -103,12 +98,9 @@ function Get-PESystemOneTimeBootSetting
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession      
     )
 
@@ -133,12 +125,9 @@ function Set-PESystemOneTimeBootSetting
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter()]
@@ -163,7 +152,7 @@ function Set-PESystemOneTimeBootSetting
                 'AttributeValue'=@('OneTimeUefiBootSeq',$OneTimeBootDevice)
             }
             
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttributes -CimSession $session -Arguments $params
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttributes -CimSession $iDRACsession -Arguments $params
             if ($responseData.ReturnValue -eq 0)
             {
                 Write-Verbose -Message 'One time boot mode configured successfully'
@@ -186,12 +175,9 @@ function Set-PEBIOSAttribute
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter()]
@@ -230,7 +216,7 @@ function Set-PEBIOSAttribute
                             'AttributeValue' = $AttributeValue
                         }
 
-                        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $session -Arguments $params
+                        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACsession -Arguments $params
                         if ($responseData.ReturnValue -eq 0)
                         {
                             Write-Verbose -Message 'BIOS attribute configured successfully'

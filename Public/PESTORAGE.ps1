@@ -18,10 +18,9 @@ Function Get-PEStorageController
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
@@ -51,10 +50,9 @@ Function Get-PEVirtualDisk
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
     
@@ -90,10 +88,9 @@ Function Get-PEPhysicalDisk
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter()]
@@ -159,10 +156,9 @@ Function Get-PEAvailableDisk
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter()]
@@ -201,10 +197,9 @@ Function Get-PEEnclosure
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
     Process
@@ -259,13 +254,11 @@ Function Clear-PERAIDConfiguration
     )]
 
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
-                   ParameterSetName='General')]
-        [Parameter(ParameterSetName='Passthru')]
-        [Parameter(ParameterSetName='Wait')]
+        [Parameter(Mandatory, ParameterSetName='General')]
+        [Parameter(Mandatory, ParameterSetName='Passthru')]
+        [Parameter(Mandatory, ParameterSetName='Wait')]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory, 
@@ -408,13 +401,11 @@ Function New-PETargetedConfigurationJob
     [CmdletBinding(DefaultParameterSetName='General')]
 
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
-                   ParameterSetName='General')]
-        [Parameter(ParameterSetName='Passthru')]
-        [Parameter(ParameterSetName='Wait')]
+        [Parameter(Mandatory, ParameterSetName='General')]
+        [Parameter(Mandatory, ParameterSetName='Passthru')]
+        [Parameter(Mandatory, ParameterSetName='Wait')]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory, 
@@ -531,10 +522,9 @@ Function Clear-PEForeignConfiguration
     )]
 
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory, 
@@ -587,11 +577,11 @@ Function New-PEJobQueue
     [CmdletBinding()]
 
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
+
         [Parameter(Mandatory, 
                    ValueFromPipeline=$true,
                    ValueFromPipelineByPropertyName=$true, 
@@ -659,10 +649,9 @@ Function Remove-PEVirtualDisk
     )]
 
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory, 
@@ -708,10 +697,9 @@ function Get-PEPCIeSSDExtender
     )]
 
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
@@ -746,10 +734,9 @@ function Get-PEPCIeSSDBackPlane
     )]
 
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
