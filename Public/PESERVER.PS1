@@ -22,21 +22,18 @@ function Get-PESystemInformation
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Alias("s")] 
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
     Process
     {
-        foreach ($Session in $iDRACSession)
-        {
-            Write-Verbose "Getting System Information for $($Session.ComputerName) ..."
-            Get-CimInstance -CimSession $Session -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_SystemView" -Namespace "root/dcim"
-        }
+
+        Write-Verbose "Getting System Information for $($iDRACSession.ComputerName) ..."
+        Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_SystemView" -Namespace "root/dcim"
+    
     }
 }
 
@@ -62,21 +59,16 @@ function Get-PEMemory
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Alias("s")] 
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()] 
         $iDRACSession
     )
 
     Process
     {
-        foreach ($Session in $iDRACSession)
-        {
-            Write-Verbose "Getting System Information for $($Session.ComputerName) ..."
-            Get-CimInstance -CimSession $Session -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_MemoryView" -Namespace "root/dcim"
-        }
+        Write-Verbose "Getting System Information for $($iDRACSession.ComputerName) ..."
+        Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_MemoryView" -Namespace "root/dcim"
     }
 }
 <#
@@ -121,18 +113,12 @@ function Set-PEPowerState
     )]
     Param
     (
+        [Parameter(Mandatory,
+                   ParameterSetName='General')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
-                   ParameterSetName='General'
-                   )]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
                    ParameterSetName='Passthru')]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(ParameterSetName='General')]
@@ -160,17 +146,15 @@ function Set-PEPowerState
 
     Process 
     {
-        foreach ($session in $iDRACSession)
+        if ($pscmdlet.ShouldProcess($iDRACSession.ComputerName, $State))
         {
-            if ($pscmdlet.ShouldProcess($Session.ComputerName, $State))
+            $job = Invoke-CimMethod -InputObject $instance -MethodName RequestStateChange -CimSession $iDRACSession -Arguments @{'RequestedState'= [PowerState]$State -as [int]}
+            if ($PSCmdlet.ParameterSetName -eq 'Passthru') 
             {
-                $job = Invoke-CimMethod -InputObject $instance -MethodName RequestStateChange -CimSession $Session -Arguments @{'RequestedState'= [PowerState]$State -as [int]}
-                if ($PSCmdlet.ParameterSetName -eq 'Passthru') 
-                {
-                    $job
-                }
+                $job
             }
         }
+        
     }
 }
 
@@ -269,38 +253,20 @@ function Backup-PEServerImage
     [CmdletBinding(DefaultParameterSetName='General')]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
-                   ParameterSetName='General'
-        )]
+        [Parameter(Mandatory,
+                   ParameterSetName='General')]
         [Alias("s")]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Passthru')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
                    ParameterSetName='Wait')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
                    ParameterSetName='Share')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
                    ParameterSetName='ShareWait')]
         [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
                    ParameterSetName='SharePassThru')]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory,ParameterSetName='General')]
@@ -419,31 +385,29 @@ function Backup-PEServerImage
 
     Process 
     {
-        foreach ($session in $iDRACSession) 
+        if (-not $ImageName) 
         {
-            if (-not $ImageName) 
+            $ImageName = "$($iDRACSession.Computername)-Image.img"
+        }
+        Write-Verbose "Server image will be backed up as ${ImageName}"
+        $Parameters.Add('ImageName',$ImageName)
+        $job = Invoke-CimMethod -InputObject $instance -MethodName BackupImage -CimSession $iDRACSession -Arguments $Parameters
+        if ($Job.ReturnValue -eq 4096) 
+        {
+            if ($Passthru) 
             {
-                $ImageName = "$($Session.Computername)-Image.img"
-            }
-            Write-Verbose "Server image will be backed up as ${ImageName}"
-            $Parameters.Add('ImageName',$ImageName)
-            $job = Invoke-CimMethod -InputObject $instance -MethodName BackupImage -CimSession $Session -Arguments $Parameters
-            if ($Job.ReturnValue -eq 4096) 
+                $job
+            } 
+            elseif ($Wait) 
             {
-                if ($Passthru) 
-                {
-                    $job
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $Session -JobID $job.Job.EndpointReference.InstanceID -Activity "backup System image for $($session.ComputerName)"
-                }
-            }
-            else
-            {
-                Throw "Job Creation failed with error: $($Job.Message)"
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "backup System image for $($iDRACSession.ComputerName)"
             }
         }
+        else
+        {
+            Throw "Job Creation failed with error: $($Job.Message)"
+        }
+        
     }
 }
 
@@ -543,38 +507,20 @@ function Export-PEServerConfigurationProfile
     [CmdletBinding(DefaultParameterSetName='General')]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
-                   ParameterSetName='General'
-        )]
+        [Parameter(Mandatory,
+                   ParameterSetName='General')]
         [Alias("s")]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Passthru')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Wait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Share')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='ShareWait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='SharePassThru')]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory,ParameterSetName='General')]
@@ -684,31 +630,28 @@ function Export-PEServerConfigurationProfile
 
     Process 
     {
-        foreach ($session in $iDRACSession) 
+        if (-not $FileName) 
         {
-            if (-not $FileName) 
+            $FileName = "$($iDRACSession.Computername)-Config.xml"
+        }
+        
+        Write-Verbose "Server profile will be backed up as ${FileName}"
+        $Parameters.Add('Filename',$FileName)
+        $job = Invoke-CimMethod -InputObject $instance -MethodName ExportSystemConfiguration -CimSession $iDRACSession -Arguments $Parameters
+        if ($job.ReturnValue -eq 4096) 
+        {
+            if ($Passthru) 
             {
-                $FileName = "$($Session.Computername)-Config.xml"
-            }
-            
-            Write-Verbose "Server profile will be backed up as ${FileName}"
-            $Parameters.Add('Filename',$FileName)
-            $job = Invoke-CimMethod -InputObject $instance -MethodName ExportSystemConfiguration -CimSession $session -Arguments $Parameters
-            if ($job.ReturnValue -eq 4096) 
-            {
-                if ($Passthru) 
-                {
-                    $job
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $Session -JobID $job.Job.EndpointReference.InstanceID -Activity "Exporting System Configuration for $($session.ComputerName)"
-                }
+                $job
             } 
-            else 
+            elseif ($Wait) 
             {
-                Throw "Job Creation failed with error: $($Job.Message)"
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Exporting System Configuration for $($iDRACSession.ComputerName)"
             }
+        } 
+        else 
+        {
+            Throw "Job Creation failed with error: $($Job.Message)"
         }
     }
 }
@@ -807,38 +750,20 @@ function Import-PEServerConfigurationProfile
     [CmdletBinding(DefaultParameterSetName='General')]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
-                   ParameterSetName='General'
-        )]
+        [Parameter(Mandatory,
+                   ParameterSetName='General')]
         [Alias("s")]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Passthru')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Wait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Share')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='ShareWait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='SharePassThru')]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory,ParameterSetName='General')]
@@ -969,32 +894,30 @@ function Import-PEServerConfigurationProfile
 
     Process 
     {
-        foreach ($session in $iDRACSession) 
-        {
-            if ($Preview) 
-            {
-                $job = Invoke-CimMethod -InputObject $instance -MethodName ImportSystemConfigurationPreview -CimSession $session -Arguments $Parameters
-            } 
-            else 
-            {
-                $job = Invoke-CimMethod -InputObject $instance -MethodName ImportSystemConfiguration -CimSession $session -Arguments $Parameters
-            }
 
-            if ($job.ReturnValue -eq 4096) 
+        if ($Preview) 
+        {
+            $job = Invoke-CimMethod -InputObject $instance -MethodName ImportSystemConfigurationPreview -CimSession $iDRACSession -Arguments $Parameters
+        } 
+        else 
+        {
+            $job = Invoke-CimMethod -InputObject $instance -MethodName ImportSystemConfiguration -CimSession $iDRACSession -Arguments $Parameters
+        }
+
+        if ($job.ReturnValue -eq 4096) 
+        {
+            if ($Passthru) 
             {
-                if ($Passthru) 
-                {
-                    $job
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $Session -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($session.ComputerName)"
-                }
+                $job
             } 
-            else 
+            elseif ($Wait) 
             {
-                Throw "Job Creation failed with error: $($Job.Message)"
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($iDRACSession.ComputerName)"
             }
+        } 
+        else 
+        {
+            Throw "Job Creation failed with error: $($Job.Message)"
         }
     }
 }
@@ -1089,38 +1012,20 @@ function Export-PETechSupportReport
     [CmdletBinding(DefaultParameterSetName='General')]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
-                   ParameterSetName='General'
-        )]
+        [Parameter(Mandatory,
+                   ParameterSetName='General')]
         [Alias("s")]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Passthru')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Wait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Share')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='ShareWait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='SharePassThru')]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory,
@@ -1214,27 +1119,25 @@ function Export-PETechSupportReport
 
     Process 
     {
-        foreach ($session in $iDRACSession) 
-        {
-            $job = Invoke-CimMethod -InputObject $instance -MethodName ExportTechSupportReport -CimSession $session -Arguments $Parameters
+ 
+        $job = Invoke-CimMethod -InputObject $instance -MethodName ExportTechSupportReport -CimSession $iDRACSession -Arguments $Parameters
 
-            if ($job.ReturnValue -eq 4096) 
+        if ($job.ReturnValue -eq 4096) 
+        {
+            if ($Passthru) 
             {
-                if ($Passthru) 
-                {
-                    $job
-                } 
-                elseif ($Wait) 
-                {
-                    if ($job.ReturnValue -eq 4096) {
-                        Wait-PEConfigurationJob -iDRACSession $Session -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($session.ComputerName)"
-                    }
-                }
+                $job
             } 
-            else 
+            elseif ($Wait) 
             {
-                Throw "Job creation failed with an error: $($Job.Message)"
+                if ($job.ReturnValue -eq 4096) {
+                    Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($iDRACSession.ComputerName)"
+                }
             }
+        } 
+        else 
+        {
+            Throw "Job creation failed with an error: $($Job.Message)"
         }
     }
 }
@@ -1272,23 +1175,14 @@ function Update-PEOSAppHealthData
     [CmdletBinding(DefaultParameterSetName='General')]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
-                   ParameterSetName='General'
-        )]
+        [Parameter(Mandatory,
+                   ParameterSetName='General')]
         [Alias("s")]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Passthru')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Wait')]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(ParameterSetName='General')]
@@ -1357,10 +1251,8 @@ function Update-PEOSAppHealthData
 Function Wait-PEConfigurationJob
 {
     Param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
     
         [Parameter (Mandatory)]
@@ -1430,10 +1322,8 @@ Function Get-PEConfigurationResult
     [CmdletBinding()]
     [OutputType([PSObject])]
     Param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
     
         [Parameter(Mandatory)]
@@ -1520,12 +1410,9 @@ Function Get-PEConfigurationShare
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-        )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory)]
@@ -1573,27 +1460,24 @@ Function Get-PEConfigurationShare
 
     Process 
     {
-        foreach ($Session in $iDRACSession) 
+        If ($Validate) 
         {
-            If ($Validate) 
+            Write-Verbose 'Testing if the share is accessible from iDRAC'
+            $Job = Invoke-CimMethod -InputObject $instance -MethodName TestNetworkShare -CimSession $iDRACSession -Arguments $Parameters
+            if (-not ($job.ReturnValue -eq 0)) 
             {
-                Write-Verbose 'Testing if the share is accessible from iDRAC'
-                $Job = Invoke-CimMethod -InputObject $instance -MethodName TestNetworkShare -CimSession $iDRACSession -Arguments $Parameters
-                if (-not ($job.ReturnValue -eq 0)) 
-                {
-                    Write-Error $Job.Message
-                } 
-                else 
-                {
-                    Write-Verbose 'Share access validation is completed successfully'
-                    $Parameters
-                }
+                Write-Error $Job.Message
             } 
-            else
+            else 
             {
-                Write-Verbose 'No share access validation requested. Returning the hashtable.'
+                Write-Verbose 'Share access validation is completed successfully'
                 $Parameters
             }
+        } 
+        else
+        {
+            Write-Verbose 'No share access validation requested. Returning the hashtable.'
+            $Parameters
         }
     }
 }
@@ -1626,16 +1510,11 @@ Function Get-PEConfigurationJobStatus
 {
     [CmdletBinding(DefaultParameterSetName='General')]
     param (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='General')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
                    ParameterSetName='Wait')]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory,
@@ -1709,25 +1588,15 @@ function New-PERebootJobForSWUpdate
     Param
     (
         # iDRAC Session Object
-        [Parameter(Mandatory=$true, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory=$true,
                    Position=0,
                    ParameterSetName='General')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Wait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Passthru')]
-        [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [Alias("s")] 
         $iDRACSession,
@@ -1757,25 +1626,23 @@ function New-PERebootJobForSWUpdate
     }
     Process
     {
-        foreach ($session in $iDRACSession) 
+
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $iDRACSession -Arguments $params 2>&1
+        if ($responseData.ReturnValue -eq 4096) 
         {
-			$responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $session -Arguments $params 2>&1
-            if ($responseData.ReturnValue -eq 4096) 
+            if ($Passthru) 
             {
-                if ($Passthru) 
-                {
-                    $responseData
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $Session -JobID $responseData.RebootJobID.EndpointReference.InstanceID -Activity "Rebooting for Software Update for $($session.ComputerName)"
-                    Write-Verbose "Reboot for Software Update done seccessfully"
-                }
+                $responseData
             } 
-            else 
+            elseif ($Wait) 
             {
-                Throw "Job Creation failed with error: $($responseData.Message)"
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.RebootJobID.EndpointReference.InstanceID -Activity "Rebooting for Software Update for $($iDRACSession.ComputerName)"
+                Write-Verbose "Reboot for Software Update done seccessfully"
             }
+        } 
+        else 
+        {
+            Throw "Job Creation failed with error: $($responseData.Message)"
         }
     }
 }
@@ -1893,64 +1760,34 @@ function Get-PELCLog
     [CmdletBinding(DefaultParameterSetName='Filter',
                   PositionalBinding=$false)]
     param(
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Export')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Passthru')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Wait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Share')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='ShareWait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='SharePassThru')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Filter')]                    
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='ExportWait')]                    
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='ExportPassthru')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='NoPassthruWait')]                    
         [ValidateNotNullOrEmpty()]
@@ -2159,40 +1996,37 @@ function Get-PELCLog
         } 
         else 
         {
-            foreach ($session in $iDRACSession)
+            if ($iDRACSession.Count -gt 1) 
             {
-                if ($iDRACSession.Count -gt 1) 
-                {
-                    $Parameters.FileName = "$($session.ComputerName)_$FileName.XML"
-                }
-                Write-Verbose "Exporting Lifecycle Log from $($session.ComputerName) to $($Parameters.FileName)"
-                if ( $ExportType -eq 'ActiveLogs' ) 
-                {
-                    $responseData = Invoke-CimMethod -InputObject $instance -MethodName ExportLCLog -CimSession $session -Arguments $Parameters
-                } 
-                else 
-                {
-                    $responseData = Invoke-CimMethod -InputObject $instance -MethodName ExportCompleteLCLog -CimSession $session -Arguments $Parameters
-                }
+                $Parameters.FileName = "$($iDRACSession.ComputerName)_$FileName.XML"
+            }
+            Write-Verbose "Exporting Lifecycle Log from $($iDRACSession.ComputerName) to $($Parameters.FileName)"
+            if ( $ExportType -eq 'ActiveLogs' ) 
+            {
+                $responseData = Invoke-CimMethod -InputObject $instance -MethodName ExportLCLog -CimSession $iDRACSession -Arguments $Parameters
+            } 
+            else 
+            {
+                $responseData = Invoke-CimMethod -InputObject $instance -MethodName ExportCompleteLCLog -CimSession $iDRACSession -Arguments $Parameters
+            }
 
-                if ($responseData.ReturnValue -eq 4096) 
+            if ($responseData.ReturnValue -eq 4096) 
+            {
+                if ($Passthru) 
                 {
-                    if ($Passthru) 
-                    {
-                        $responseData
-                    } 
-                    elseif ($Wait) 
-                    {
-                        Wait-PEConfigurationJob -iDRACSession $session -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Exporting Lifecycle Log for $($session.ComputerName)"
-                        Write-Verbose "Exporting Lifecycle Log from $($session.ComputerName) to $($Parameters.FileName) was successful"
-                    }
+                    $responseData
                 } 
-                else 
+                elseif ($Wait) 
                 {
-                    Throw "Job Creation failed with error: $($responseData.Message)"
+                    Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Exporting Lifecycle Log for $($iDRACSession.ComputerName)"
+                    Write-Verbose "Exporting Lifecycle Log from $($iDRACSession.ComputerName) to $($Parameters.FileName) was successful"
                 }
+            } 
+            else 
+            {
+                Throw "Job Creation failed with error: $($responseData.Message)"
+            }
 
-            }        
         }
     }
 }
@@ -2277,40 +2111,22 @@ function Set-PEAutobackupSchedule
     [OutputType([String])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='General')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Share')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Passthru')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='Wait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='ShareWait')]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+        [Parameter(Mandatory,
                    Position=0,
                    ParameterSetName='SharePassThru')]
         [ValidateNotNullOrEmpty()]
@@ -2495,66 +2311,62 @@ function Set-PEAutobackupSchedule
     }
     Process
     {
-        foreach ($session in $iDRACSession) 
+        if ($iDRACSession.count -gt 1) 
         {
-            
-            if ($iDRACSession.count -gt 1) 
+            $Parameters.ImageName = "$($iDRACSession.ComputerName)_$ImageName.img"
+        }
+
+        Write-Verbose "Automatic Backup is being scheduled for $($iDRACSession.ComputerName) with ImageName $($Parameters.ImageName)"
+        $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
+        $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
+
+        $argMap = @{AttributeName="Automatic Backup Feature";AttributeValue="Enabled"}
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACSession -Arguments $argMap
+        if ($responseData.ReturnValue -ne 0)
+        {
+            throw "Attribute configuration failed with an error: $($responseData.Message)"
+        }
+
+        Write-Verbose "Creating Configuration Job on $($iDRACSession.ComputerName)"
+        $argMap = @{ScheduledStartTime="TIME_NOW"}
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateConfigJob -CimSession $iDRACSession -Arguments $argMap
+
+        if ($responseData.ReturnValue -eq 4096) 
+        {
+            if ($Passthru) 
             {
-                $Parameters.ImageName = "$($session.ComputerName)_$ImageName.img"
-            }
-
-            Write-Verbose "Automatic Backup is being scheduled for $($session.ComputerName) with ImageName $($Parameters.ImageName)"
-            $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
-            $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
-
-            $argMap = @{AttributeName="Automatic Backup Feature";AttributeValue="Enabled"}
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $session -Arguments $argMap
-            if ($responseData.ReturnValue -ne 0)
-            {
-                throw "Attribute configuration failed with an error: $($responseData.Message)"
-            }
-
-            Write-Verbose "Creating Configuration Job on $($session.ComputerName)"
-            $argMap = @{ScheduledStartTime="TIME_NOW"}
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateConfigJob -CimSession $session -Arguments $argMap
-
-            if ($responseData.ReturnValue -eq 4096) 
-            {
-                if ($Passthru) 
-                {
-                    $responseData
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $session -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuration Job for $($session.ComputerName)"
-                    Write-Verbose "Configuration Job on $($session.ComputerName) was successful"
-                }
-            } else 
-            {
-                Throw "Configuration Job Creation failed with error: $($responseData.Message)"
-            }
-
-            $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
-            $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
-
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetBackupSchedule -CimSession $session -Arguments $Parameters 2>&1
-
-            if ($responseData.ReturnValue -eq 4096) 
-            {
-                if ($Passthru) 
-                {
-                    $responseData
-                } 
-                elseif ($Wait) 
-                {
-                    Wait-PEConfigurationJob -iDRACSession $session -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Automatic Backup Schedule for $($session.ComputerName)"
-                    Write-Verbose "Automatic Backup Schedule on $($session.ComputerName) was successful"
-                }
+                $responseData
             } 
-            else 
+            elseif ($Wait) 
             {
-                Throw "Automatic Backup Schedule failed with error: $($responseData.Message)"
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuration Job for $($iDRACSession.ComputerName)"
+                Write-Verbose "Configuration Job on $($iDRACSession.ComputerName) was successful"
             }
+        } else 
+        {
+            Throw "Configuration Job Creation failed with error: $($responseData.Message)"
+        }
+
+        $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
+        $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
+
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetBackupSchedule -CimSession $iDRACSession -Arguments $Parameters 2>&1
+
+        if ($responseData.ReturnValue -eq 4096) 
+        {
+            if ($Passthru) 
+            {
+                $responseData
+            } 
+            elseif ($Wait) 
+            {
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Automatic Backup Schedule for $($iDRACSession.ComputerName)"
+                Write-Verbose "Automatic Backup Schedule on $($iDRACSession.ComputerName) was successful"
+            }
+        } 
+        else 
+        {
+            Throw "Automatic Backup Schedule failed with error: $($responseData.Message)"
         }
     }
 }
@@ -2587,19 +2399,11 @@ function  Get-PESoftwareInventory
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, ParameterSetName='General',
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Parameter(Mandatory, ParameterSetName='Installed',
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Parameter(Mandatory, ParameterSetName='Available',
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Alias("s")] 
+        [Parameter(Mandatory, ParameterSetName='General',)]
+        [Parameter(Mandatory, ParameterSetName='Installed')]
+        [Parameter(Mandatory, ParameterSetName='Available')]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()] 
         $iDRACSession,
 
         [Parameter(ParameterSetName='Installed')]
@@ -2611,23 +2415,20 @@ function  Get-PESoftwareInventory
 
     Process
     {
-        foreach ($Session in $iDRACSession)
+        if ($Available)
         {
-            if ($Available)
-            {
-                Write-Verbose "Getting available Software Inventory for $($Session.ComputerName) ..."
-                Get-CimInstance -CimSession $Session -ClassName DCIM_SoftwareIdentity -Filter "Status='Available'" -Namespace "root/dcim"
-            }
-            elseif ($Installed)
-            {
-                Write-Verbose "Getting installed software inventory for $($Session.ComputerName) ..."
-                Get-CimInstance -CimSession $Session -ClassName DCIM_SoftwareIdentity -Filter "Status='Installed'" -Namespace "root/dcim"
-            }
-            else
-            {
-                Write-Verbose "Getting software inventory for $($Session.ComputerName) ..."
-                Get-CimInstance -CimSession $Session -ClassName DCIM_SoftwareIdentity -Namespace "root/dcim"
-            }
+            Write-Verbose "Getting available Software Inventory for $($iDRACSession.ComputerName) ..."
+            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_SoftwareIdentity -Filter "Status='Available'" -Namespace "root/dcim"
+        }
+        elseif ($Installed)
+        {
+            Write-Verbose "Getting installed software inventory for $($iDRACSession.ComputerName) ..."
+            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_SoftwareIdentity -Filter "Status='Installed'" -Namespace "root/dcim"
+        }
+        else
+        {
+            Write-Verbose "Getting software inventory for $($iDRACSession.ComputerName) ..."
+            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_SoftwareIdentity -Namespace "root/dcim"
         }
     }
 }
@@ -2657,18 +2458,12 @@ function Get-PELCAttribute
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
-                   ParameterSetName='All'
-                   )]
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false,
+        [Parameter(Mandatory,
+                   ParameterSetName='All')]
+        [Parameter(Mandatory,
                    ParameterSetName='Named')]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory=$true,ParameterSetName='Named')]
@@ -2741,12 +2536,9 @@ function Set-PELCAttribute
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         # Sepcify the name of the attribute name to be set
@@ -2785,7 +2577,7 @@ function Set-PELCAttribute
                             'AttributeValue' = $AttributeValue
                         }
 
-                        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $session -Arguments $params
+                        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACSession -Arguments $params
                         if ($responseData.ReturnValue -eq 0)
                         {
                             Write-Verbose -Message 'LC attribute configured successfully'
@@ -2849,12 +2641,9 @@ function Get-PELCState
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     ) 
        
@@ -2910,12 +2699,9 @@ function Get-PESystemAttribute
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter()]
@@ -2989,16 +2775,13 @@ function Get-PEFan
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
-    process
+    Process
     {
         Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_FanView -Namespace root\dcim
     }
@@ -3026,12 +2809,9 @@ function Get-PECPU
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
@@ -3064,12 +2844,9 @@ function Get-PEPowerSupply
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false
-                   )]
+        [Parameter(Mandatory)]
         [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
@@ -3123,6 +2900,8 @@ function Update-PESystemFromRepository
     Param
     (
         [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory)]
@@ -3179,7 +2958,7 @@ function Update-PESystemFromRepository
 
     if ($ValidateOnly)
     {
-        Wait-PEConfigurationJob -iDRACSession $Session -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($session.ComputerName)"
+        Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($iDRACSession.ComputerName)"
         Get-PESystemRepositoryBasedUpdateList -iDRACSession $iDRACSession -Verbose
     }
 }
@@ -3206,6 +2985,8 @@ function Get-PESystemRepositoryBasedUpdateList
     Param
     (
         [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession
     )
 
@@ -3251,6 +3032,8 @@ function New-PESystemRebootJob
     Param
     (
         [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter(Mandatory)]
@@ -3266,7 +3049,7 @@ function New-PESystemRebootJob
         RebootJobType = $RebootJobType
     }
 
-    Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $session -Arguments $Parameters
+    Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $iDRACSession -Arguments $Parameters
 }
 
 
