@@ -20,19 +20,15 @@ function Get-PENetworkDevice
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Alias("s")] 
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()] 
         $iDRACSession
     )
-
-    Process {
-        foreach ($Session in $iDRACSession) {
-            Write-Verbose "Getting Network device Information for $($Session.ComputerName) ..."
-            Get-CimInstance -ResourceUri 'http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_NICView' -Namespace root\dcim -CimSession $Session
-        }
+    Process 
+    {
+        Write-Verbose "Getting Network device Information for $($iDRACSession.ComputerName) ..."
+        Get-CimInstance -ResourceUri 'http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_NICView' -Namespace root\dcim -CimSession $iDRACSession
     }
 }
 
@@ -67,11 +63,9 @@ function Get-PENetworkDeviceAttribute
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Alias("s")] 
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]  
         $iDRACSession,
 
         [Parameter()]
@@ -84,9 +78,9 @@ function Get-PENetworkDeviceAttribute
         [String] $AttributeDisplayName
     )
 
-    Process {
-        foreach ($Session in $iDRACSession) {
-            Write-Verbose "Getting Network device attributes for $($Session.ComputerName) ..."
+    Process 
+    {
+            Write-Verbose "Getting Network device attributes for $($iDRACSession.ComputerName) ..."
             
             if ($FQDD)
             {
@@ -149,8 +143,7 @@ function Get-PENetworkDeviceAttribute
             {
                 $filter = $null
             }
-            Get-CimInstance -CimSession $Session -ClassName DCIM_NICEnumeration -Namespace root\dcim -Filter $filter
-        }
+            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_NICEnumeration -Namespace root\dcim -Filter $filter
     }
 }
 
@@ -179,31 +172,29 @@ function Get-PENetworkDeviceCapability
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Alias("s")] 
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()] 
         $iDRACSession,
 
         [Parameter()]
         [String] $FQDD
     )
 
-    Process {
-        foreach ($Session in $iDRACSession) {
-            Write-Verbose "Getting Network device capabilities for $($Session.ComputerName) ..."
-            
-            if ($FQDD)
-            {
-                $filter = "FQDD='$FQDD'"
-            }
-            else
-            {
-                $filter = $null
-            }
-            Get-CimInstance -CimSession $Session -ClassName DCIM_NICCapabilities -Namespace root\dcim -Filter $filter
+    Process 
+    {
+        Write-Verbose "Getting Network device capabilities for $($iDRACSession.ComputerName) ..."
+        
+        if ($FQDD)
+        {
+            $filter = "FQDD='$FQDD'"
         }
+        else
+        {
+            $filter = $null
+        }
+        Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_NICCapabilities -Namespace root\dcim -Filter $filter
+    
     }
 }
 
@@ -232,31 +223,29 @@ function Get-PENetworkDeviceStatistic
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, 
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false)]
-        [Alias("s")] 
+        [Parameter(Mandatory)]
+        [Alias("s")]
+        [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
         [Parameter()]
         [String] $FQDD
     )
 
-    Process {
-        foreach ($Session in $iDRACSession) {
-            Write-Verbose "Getting Network device statistics for $($Session.ComputerName) ..."
-            
-            if ($FQDD)
-            {
-                $filter = "FQDD='$FQDD'"
-            }
-            else
-            {
-                $filter = $null
-            }
-            Get-CimInstance -CimSession $Session -ClassName DCIM_NICStatistics -Namespace root\dcim -Filter $filter
+    Process 
+    {
+        Write-Verbose "Getting Network device statistics for $($iDRACSession.ComputerName) ..."
+        
+        if ($FQDD)
+        {
+            $filter = "FQDD='$FQDD'"
         }
+        else
+        {
+            $filter = $null
+        }
+        Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_NICStatistics -Namespace root\dcim -Filter $filter
+    
     }
 }
 
