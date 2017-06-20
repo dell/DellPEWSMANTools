@@ -883,12 +883,7 @@ function Get-PEADGroupInfo
     }
     Process
     {
-        if ( $iDRACSession.Count -gt 1 ) 
-        {
-            $mapofmap = @{}
-        }
-
-
+        
         Write-Verbose "Retrieving AD Group Information for $($iDRACsession.ComputerName)"
         $map = @{}
         $users = 1..5 | % {"ADGroup"+$_} 
@@ -909,22 +904,11 @@ function Get-PEADGroupInfo
                     $map.$key.$entity = $currValue
                     }
             Write-Verbose "AD Group Information for $($iDRACsession.ComputerName) retrieved successfully"
-            if ( $iDRACSession.Count -gt 1 ) 
-            {
-                $mapofmap[$($iDRACsession.ComputerName)]=$map.Clone()
-            } 
-            else 
-            {
-                $map
-            }
+            $map
         }
         catch
         {
             Throw "Could Not Retrieve AD Group Information for $($iDRACsession.ComputerName)"
-        }
-        if ( $iDRACSession.Count -gt 1 ) 
-        {
-            $mapofmap
         }
     }
 }
@@ -950,11 +934,6 @@ function Get-PEDRACUser
     }
     Process
     {
-        if ( $iDRACSession.Count -gt 1 ) 
-        {
-            $mapofmap = @{}
-        }
-        
 
         Write-Verbose "Retrieving iDRAC User Details for $($iDRACsession.ComputerName)"
         Try{
@@ -997,23 +976,12 @@ function Get-PEDRACUser
             }
             Write-Verbose "iDRAC User Details for $($iDRACsession.ComputerName) retrieved successfully"
 
-            if ( $iDRACSession.Count -gt 1 ) 
-            {
-                $mapofmap[$($iDRACsession.ComputerName)]=$map.Clone()
-            } 
-            else 
-            {
-                $map
-            }
+            $map
         } 
 
         Catch 
         {
             Throw "iDRAC User Details for $($iDRACsession.ComputerName) could not be retrieved"
-        }
-        if ( $iDRACSession.Count -gt 1 ) 
-        {
-            $mapofmap
         }
     }
 }
