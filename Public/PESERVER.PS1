@@ -376,11 +376,6 @@ function Backup-PEServerImage
             $Parameters.Add('Untiltime',$UntilTime)
         }
 
-        if ($iDRACSession.Count -gt 1) 
-        {
-            Write-Warning "Ignoring `$ImageName value as there are multiple iDrac sessions. Computername property of the session object will be used as image name."
-            $ImageName = ''
-        }
     }
 
     Process 
@@ -621,11 +616,6 @@ function Export-PEServerConfigurationProfile
             $Parameters.Add('Target', $Target)
         }
 
-        if ($iDRACSession.Count -gt 1) 
-        {
-            Write-Warning "Ignoring `$FileName value as there are multiple iDrac sessions. Computername property of the session object will be used as file name."
-            $FileName = ''
-        }
     }
 
     Process 
@@ -886,10 +876,6 @@ function Import-PEServerConfigurationProfile
             $Parameters.Add('EndHostPowerState',[EndHostPowerState]$EndHostPowerState -as [int])
         }
 
-        if ($iDRACSession.Count -gt 1) 
-        {
-            Write-Warning "Multiple iDrac Sessions found. The same XML configuration ($FileName) will be imported on all target systems."
-        }
     }
 
     Process 
@@ -1110,11 +1096,6 @@ function Export-PETechSupportReport
         }
 
         $Parameters.Add('DataSelectorArrayIn', $DataSelectorArray)
-
-        if ($iDRACSession.Count -gt 1) 
-        {
-            Write-Warning "Multiple iDrac Sessions found. Techsupport data will be exported from all target systems."
-        }
     }
 
     Process 
@@ -1974,15 +1955,8 @@ function Get-PELCLog
                     }
                 }
             }
-
-            if ($iDRACSession.Count -gt 1) 
-            {
-                Write-Warning "Multiple iDrac Sessions found. Lifecycle Log be exported from all target systems. Each logfilename will be prefixed by IP address"
-            } 
-            else 
-            {
-                $Parameters.Add('FileName', $FileName)
-            }       
+            # Add the mandatory parameter filename
+            $Parameters.Add('FileName', $FileName)
         }
     }
     }
@@ -1996,10 +1970,6 @@ function Get-PELCLog
         } 
         else 
         {
-            if ($iDRACSession.Count -gt 1) 
-            {
-                $Parameters.FileName = "$($iDRACSession.ComputerName)_$FileName.XML"
-            }
             Write-Verbose "Exporting Lifecycle Log from $($iDRACSession.ComputerName) to $($Parameters.FileName)"
             if ( $ExportType -eq 'ActiveLogs' ) 
             {
@@ -2299,23 +2269,10 @@ function Set-PEAutobackupSchedule
         {
             $Parameters.Add('MaxNumberOfBackupArchives', $MaxNumberOfBackupArchives)
         }
-
-        if ($iDRACSession.count -gt 1) 
-        {
-            Write-Warning "Multiple iDRACSessions found. Automatic Backup will be scheduled for all the mentioned IPs. The ImageName will be prefixed with the corresponding IP Address"
-        } 
-        else 
-        {
-            $Parameters.Add('ImageName', $ImageName)
-        }
+        $Parameters.Add('ImageName', $ImageName)
     }
     Process
     {
-        if ($iDRACSession.count -gt 1) 
-        {
-            $Parameters.ImageName = "$($iDRACSession.ComputerName)_$ImageName.img"
-        }
-
         Write-Verbose "Automatic Backup is being scheduled for $($iDRACSession.ComputerName) with ImageName $($Parameters.ImageName)"
         $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
         $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
