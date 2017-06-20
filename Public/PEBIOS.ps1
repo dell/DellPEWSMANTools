@@ -163,7 +163,7 @@ function Set-PESystemOneTimeBootSetting
                 'AttributeValue'=@('OneTimeUefiBootSeq',$OneTimeBootDevice)
             }
             
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttributes -CimSession $session -Arguments $params
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttributes -CimSession $iDRACsession -Arguments $params
             if ($responseData.ReturnValue -eq 0)
             {
                 Write-Verbose -Message 'One time boot mode configured successfully'
@@ -230,7 +230,7 @@ function Set-PEBIOSAttribute
                             'AttributeValue' = $AttributeValue
                         }
 
-                        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $session -Arguments $params
+                        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACsession -Arguments $params
                         if ($responseData.ReturnValue -eq 0)
                         {
                             Write-Verbose -Message 'BIOS attribute configured successfully'
