@@ -19,16 +19,22 @@
 
     Begin
     {
-        $CimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
+        $cimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
     }
 
     Process
     {
-        Write-Verbose "Creating iDRAC session(s) ..."
+        Write-Verbose "Creating iDRAC session..."
         try
         {
-            $Session = New-CimSession -Authentication Basic -Credential $Credential -ComputerName $IPAddress -Port 443 -SessionOption $CimOptions -OperationTimeoutSec $MaxTimeout -ErrorAction Stop
-            return $Session
+            $session = New-CimSession -Authentication Basic -Credential $Credential -ComputerName $IPAddress -Port 443 -SessionOption $cimOptions -OperationTimeoutSec $MaxTimeout -ErrorAction Stop
+            if ($session)
+            {
+                $sysInfo = Get-PESystemInformation -iDRACSession $Session
+                Add-Member -inputObject $Session -Name SystemGeneration -Value [int](([regex]::Match($sysInfo.SystemGeneration,'\d+')).groups[0].Value) -MemberType NoteProperty
+                Add-Member -inputObject $Session -Name SystemType -Value [regex]::Match($sysInfo.SystemGeneration,'(?<=\s).*').groups[0].Value -MemberType NoteProperty
+                return $session     
+            }
         }
         catch
         {
