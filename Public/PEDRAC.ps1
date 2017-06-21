@@ -286,7 +286,7 @@ function Set-PEADRoleGroup
     Param
     (
         # iDRAC Session Object
-        [Parameter(Mandatory=$true
+        [Parameter(Mandatory=$true,
                    Position=0,
                    ParameterSetName='General')]
         [Parameter(Mandatory=$true,
