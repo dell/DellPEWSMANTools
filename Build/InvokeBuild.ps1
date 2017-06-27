@@ -83,6 +83,7 @@ task Test Init, {
 task Build Test, {
     $lines
     
+    Set-Location $ProjectRoot
     # Load the module, read the exported functions, update the psd1 FunctionsToExport
     Set-ModuleFunctions
 
