@@ -20,7 +20,7 @@ param(
     $ProjectRoot = $ENV:BHProjectPath
     if(-not $ProjectRoot)
     {
-        $ProjectRoot = (Resolve-Path -Path "$PSScriptRoot\..")..Path
+        $ProjectRoot = (Resolve-Path -Path "$PSScriptRoot\.." -ErrorAction Stop).Path
     }
 
     $Timestamp = Get-date -uformat "%Y%m%d-%H%M%S"
@@ -83,6 +83,7 @@ task Test Init, {
 task Build Test, {
     $lines
     
+    Set-Location $ProjectRoot
     # Load the module, read the exported functions, update the psd1 FunctionsToExport
     Set-ModuleFunctions
 

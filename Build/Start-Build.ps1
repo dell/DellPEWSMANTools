@@ -1,5 +1,5 @@
 param(
-    $Task = 'Default'
+    $Task = 'Build' # build is the default task, add support to deploy later
 )
 
 # dependencies
@@ -13,4 +13,4 @@ $null = Invoke-PSDepend -Path "$PSScriptRoot\build.requirements.psd1" -Install -
 
 Set-BuildEnvironment -Force
 
-Invoke-Build -File $PSScriptRoot\InvokeBuild.ps1
+Invoke-Build -File $PSScriptRoot\InvokeBuild.ps1 -Task $Task
