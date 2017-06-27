@@ -2356,7 +2356,7 @@ function  Get-PESoftwareInventory
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
-        [Parameter(Mandatory, ParameterSetName='General',)]
+        [Parameter(Mandatory, ParameterSetName='General')]
         [Parameter(Mandatory, ParameterSetName='Installed')]
         [Parameter(Mandatory, ParameterSetName='Available')]
         [Alias("s")]
