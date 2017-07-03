@@ -31,8 +31,8 @@
             if ($session)
             {
                 $sysInfo = Get-PESystemInformation -iDRACSession $Session
-                Add-Member -inputObject $Session -Name SystemGeneration -Value [int](([regex]::Match($sysInfo.SystemGeneration,'\d+')).groups[0].Value) -MemberType NoteProperty
-                Add-Member -inputObject $Session -Name SystemType -Value [regex]::Match($sysInfo.SystemGeneration,'(?<=\s).*').groups[0].Value -MemberType NoteProperty
+                Add-Member -inputObject $Session -Name SystemGeneration -Value $([int](([regex]::Match($sysInfo.SystemGeneration,'\d+')).groups[0].Value)) -MemberType NoteProperty
+                Add-Member -inputObject $Session -Name SystemType -Value $([regex]::Match($sysInfo.SystemGeneration,'(?<=\s).*').groups[0].Value) -MemberType NoteProperty
                 return $session     
             }
         }
