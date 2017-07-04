@@ -126,9 +126,10 @@ Describe 'Get-PEDRACInformation' {
             ($NameSpace -eq 'root\dcim')
         } -Verifiable
 
-        $Output = Get-PEDRACInformation -iDRACSession 'dummy' -ErrorVariable PEDRACInfoError
+        $Output = Get-PEDRACInformation -iDRACSession 'dummy' -ErrorVariable PEDRACInfoError -ErrorAction SilentlyContinue
 
         It "Should write the error to the error stream" {
+            {Get-PEDRACInformation -iDRACSession 'dummy' -ErrorAction Stop} | Should Throw 'failure'
             $PEDRACInfoError | Should NOT BeNullOrEmpty
             $Output | Should BeNullOrEmpty
         }
