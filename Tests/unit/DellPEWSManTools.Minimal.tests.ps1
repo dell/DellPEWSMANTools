@@ -64,7 +64,7 @@ if ($PublicFunctions.count -gt 0) {
 
             foreach ($rule in $rules) 
             {
-                It “passes the PSScriptAnalyzer Rule $rule“ {
+                It "passes the PSScriptAnalyzer Rule $rule" {
                     (Invoke-ScriptAnalyzer -Path $PublicFunction.FullName -IncludeRule $rule.RuleName ).Count | Should Be 0
 
                 }
