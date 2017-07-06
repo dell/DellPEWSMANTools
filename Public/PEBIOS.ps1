@@ -40,7 +40,7 @@ function Get-PEBIOSAttribute
 
     Begin
     {
-        $CimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
+        #$CimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
     }
 
     Process
@@ -96,6 +96,7 @@ function Get-PEBIOSAttribute
 function Get-PESystemOneTimeBootSetting
 {
     [CmdletBinding()]
+    [OutputType([System.Collections.Hashtable])]
     param
     (
         [Parameter(Mandatory)]
@@ -104,7 +105,7 @@ function Get-PESystemOneTimeBootSetting
         $iDRACSession      
     )
 
-    process
+    Process
     {
         $oneTimeBootSetting = @{}
         $oneTimeBootMode = Get-PEBIOSAttribute -iDRACSession $iDRACSession -AttributeName OneTimeBootMode
@@ -121,7 +122,7 @@ function Get-PESystemOneTimeBootSetting
 
 function Set-PESystemOneTimeBootSetting
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
@@ -136,42 +137,50 @@ function Set-PESystemOneTimeBootSetting
 
     Begin
     {
-        $CimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
+        #$CimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
         $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_BIOSService";Name="DCIM:BIOSService";}
         $instance = New-CimInstance -ClassName DCIM_BIOSService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
     }
 
-    process
+    Process
     {
         $possibleDevices = Get-PEBIOSAttribute -iDRACSession $iDRACSession -AttributeName 'OneTimeUefiBootSeqDev' -Verbose
         if ($possibleDevices.PossibleValues -contains $OneTimeBootDevice)
         {
-            $params = @{
-                'Target'='BIOS.Setup.1-1'
-                'AttributeName'=@('OneTimeBootMode','OneTimeUefiBootSeqDev')
-                'AttributeValue'=@('OneTimeUefiBootSeq',$OneTimeBootDevice)
-            }
-            
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttributes -CimSession $iDRACsession -Arguments $params
-            if ($responseData.ReturnValue -eq 0)
+            if ($PSCmdlet.ShouldProcess($OneTimeBootDevice, "Set one time boot device setting"))
             {
-                Write-Verbose -Message 'One time boot mode configured successfully'
-                if ($responseData.RebootRequired -eq 'Yes')
+                $params = @{
+                    'Target'='BIOS.Setup.1-1'
+                    'AttributeName'=@('OneTimeBootMode','OneTimeUefiBootSeqDev')
+                    'AttributeValue'=@('OneTimeUefiBootSeq',$OneTimeBootDevice)
+                }
+                
+                $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttributes -CimSession $iDRACsession -Arguments $params
+                if ($responseData.ReturnValue -eq 0)
                 {
-                    Write-Verbose -Message 'One time boot mode change requires reboot.'
+                    Write-Verbose -Message 'One time boot mode configured successfully'
+                    if ($responseData.RebootRequired -eq 'Yes')
+                    {
+                        Write-Verbose -Message 'One time boot mode change requires reboot.'
+                    }
+                }
+                else
+                {
+                    Write-Warning -Message "One time boot mode change failed: $($responseData.Message)"
                 }
             }
-            else
-            {
-                Write-Warning -Message "One time boot mode change failed: $($responseData.Message)"
-            }
+            
+        }
+        else 
+        {
+            Write-Warning -Message "$OneTimeBootDevice is not a valid one time boot device."
         }
     }
 }
 
 function Set-PEBIOSAttribute
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
@@ -189,7 +198,7 @@ function Set-PEBIOSAttribute
 
     Begin
     {
-        $CimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
+        #$CimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
         $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_BIOSService";Name="DCIM:BIOSService";}
         $instance = New-CimInstance -ClassName DCIM_BIOSService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
     }
@@ -208,32 +217,37 @@ function Set-PEBIOSAttribute
                 #Check if the AttributeValue falls in the same set as the PossibleValues by calling the helper function
                 if (TestPossibleValuesContainAttributeValues -PossibleValues $attribute.PossibleValues -AttributeValues $AttributeValue )
                 {
-                    try
+                    if ($PSCmdlet.ShouldProcess($AttributeValue, 'Set BIOS attribute'))
                     {
-                        $params = @{
-                            'Target'         = 'BIOS.Setup.1-1'
-                            'AttributeName'  = $AttributeName
-                            'AttributeValue' = $AttributeValue
-                        }
 
-                        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACsession -Arguments $params
-                        if ($responseData.ReturnValue -eq 0)
+                        try
                         {
-                            Write-Verbose -Message 'BIOS attribute configured successfully'
-                            if ($responseData.RebootRequired -eq 'Yes')
+                            $params = @{
+                                'Target'         = 'BIOS.Setup.1-1'
+                                'AttributeName'  = $AttributeName
+                                'AttributeValue' = $AttributeValue
+                            }
+
+                            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACsession -Arguments $params
+                            if ($responseData.ReturnValue -eq 0)
                             {
-                                Write-Verbose -Message 'BIOS attribute change requires reboot.'
+                                Write-Verbose -Message 'BIOS attribute configured successfully'
+                                if ($responseData.RebootRequired -eq 'Yes')
+                                {
+                                    Write-Verbose -Message 'BIOS attribute change requires reboot.'
+                                }
+                            }
+                            else
+                            {
+                                Write-Warning -Message "BIOS attribute change failed: $($responseData.Message)"
                             }
                         }
-                        else
+                        catch
                         {
-                            Write-Warning -Message "BIOS attribute change failed: $($responseData.Message)"
+                            Write-Error -Message $_
                         }
                     }
-                    catch
-                    {
-                        Write-Error -Message $_
-                    }
+                    
                 }
                 else
                 {
