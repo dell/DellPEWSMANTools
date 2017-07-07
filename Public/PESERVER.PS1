@@ -305,7 +305,7 @@ function Backup-PEServerImage
         [Parameter(ParameterSetName='Share')]
         [Parameter(ParameterSetName='ShareWait')]
         [Parameter(ParameterSetName='SharePassThru')]
-        [String]$Passphrase,
+        [SecureString]$Passphrase,
 
         [Parameter(ParameterSetName='General')]
         [Parameter(ParameterSetName='Passthru')]
@@ -368,7 +368,9 @@ function Backup-PEServerImage
 
         if ($Passphrase) 
         {
-            $Parameters.Add('Passphrase',$Passphrase)
+            # Passphrase is a secure string, hence this needs to be done to pass it in plain text
+            $tempCred = New-Object -TypeName PSCredential -ArgumentList 'temp',$Passphrase
+            $Parameters.Add('Passphrase', $($tempCred.GetNetworkCredential().Password))
         }
 
         if ($UntilTime) 
@@ -1153,7 +1155,9 @@ function Export-PETechSupportReport
 #>
 function Update-PEOSAppHealthData
 {
-    [CmdletBinding(DefaultParameterSetName='General')]
+    [CmdletBinding(DefaultParameterSetName='General',
+                    SupportsShouldProcess=$true,
+                    ConfirmImpact='low')]
     Param
     (
         [Parameter(Mandatory,
@@ -1192,21 +1196,24 @@ function Update-PEOSAppHealthData
     }
     Process
     {
-        $job = Invoke-CimMethod -InputObject $instance -MethodName UpdateOSAppHealthData -CimSession $iDRACSession -Arguments $Parameters
-        if ($job.ReturnValue -eq 4096) 
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Update OS App health data'))
         {
-            if ($Passthru) 
+            $job = Invoke-CimMethod -InputObject $instance -MethodName UpdateOSAppHealthData -CimSession $iDRACSession -Arguments $Parameters
+            if ($job.ReturnValue -eq 4096) 
             {
-                $job
+                if ($Passthru) 
+                {
+                    $job
+                } 
+                elseif ($Wait) 
+                {
+                    Wait-PEConfigurationJob -JobID $job.Job.EndpointReference.InstanceID -iDRACSession $iDRACSession -Activity 'Updating OS APP Health Data'
+                }
             } 
-            elseif ($Wait) 
+            else 
             {
-                Wait-PEConfigurationJob -JobID $job.Job.EndpointReference.InstanceID -iDRACSession $iDRACSession -Activity 'Updating OS APP Health Data'
+                Throw "Job creation failed with an error: $($job.Message)"
             }
-        } 
-        else 
-        {
-            Throw "Job creation failed with an error: $($job.Message)"
         }
     }
 }
@@ -1389,6 +1396,7 @@ Function Get-PEConfigurationResult
 Function Get-PEConfigurationShare 
 {
     [CmdletBinding()]
+    [OutputType([System.Collections.HashTable])]
     Param
     (
         [Parameter(Mandatory)]
@@ -1564,7 +1572,9 @@ PS C:\Windows\system32> New-PERebootJobForSWUpdate -iDRACSession $session -Reboo
 function New-PERebootJobForSWUpdate
 {
     [CmdletBinding(DefaultParameterSetName='General',  
-                  PositionalBinding=$false)]
+                  PositionalBinding=$false,
+                  SupportsShouldProcess=$true,
+                  ConfirmImpact='low')]
     [OutputType([String])]
     Param
     (
@@ -1607,23 +1617,25 @@ function New-PERebootJobForSWUpdate
     }
     Process
     {
-
-        $responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $iDRACSession -Arguments $params 2>&1
-        if ($responseData.ReturnValue -eq 4096) 
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Create new reboot job for software update'))
         {
-            if ($Passthru) 
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $iDRACSession -Arguments $params 2>&1
+            if ($responseData.ReturnValue -eq 4096) 
             {
-                $responseData
+                if ($Passthru) 
+                {
+                    $responseData
+                } 
+                elseif ($Wait) 
+                {
+                    Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.RebootJobID.EndpointReference.InstanceID -Activity "Rebooting for Software Update for $($iDRACSession.ComputerName)"
+                    Write-Verbose "Reboot for Software Update done seccessfully"
+                }
             } 
-            elseif ($Wait) 
+            else 
             {
-                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.RebootJobID.EndpointReference.InstanceID -Activity "Rebooting for Software Update for $($iDRACSession.ComputerName)"
-                Write-Verbose "Reboot for Software Update done seccessfully"
+                Throw "Job Creation failed with error: $($responseData.Message)"
             }
-        } 
-        else 
-        {
-            Throw "Job Creation failed with error: $($responseData.Message)"
         }
     }
 }
@@ -2077,7 +2089,9 @@ Returns the Job object without waiting.
 function Set-PEAutobackupSchedule
 {
     [CmdletBinding(DefaultParameterSetName='General',
-                  PositionalBinding=$false)]
+                  PositionalBinding=$false,
+                  SupportsShouldProcess=$true,
+                  ConfirmImpact='low')]
     [OutputType([String])]
     Param
     (
@@ -2129,7 +2143,7 @@ function Set-PEAutobackupSchedule
         [Parameter(ParameterSetName='Share')]
         [Parameter(ParameterSetName='ShareWait')]
         [Parameter(ParameterSetName='SharePassThru')]
-        [String] $Passphrase,
+        [SecureString] $Passphrase,
 
         [Parameter(ParameterSetName='General')]
         [Parameter(ParameterSetName='Passthru')]
@@ -2255,7 +2269,12 @@ function Set-PEAutobackupSchedule
             }
         }
 
-        $Parameters.Add('Passphrase', $Passphrase)
+        if ($Passphrase)
+        {
+            # Passphrase is a secure string, hence this needs to be done to pass it in plain text
+            $tempCred = New-Object -TypeName PSCredential -ArgumentList 'temp',$Passphrase
+            $Parameters.Add('Passphrase', $($tempCred.GetNetworkCredential().Password))
+        }
         $Parameters.Add('Time', $ScheduledStartTime)
         $Parameters.Add('DayOfMonth', $DayOfMonth)
         $Parameters.Add('WeekOfMonth', $WeekOfMonth)
@@ -2273,58 +2292,62 @@ function Set-PEAutobackupSchedule
     }
     Process
     {
-        Write-Verbose "Automatic Backup is being scheduled for $($iDRACSession.ComputerName) with ImageName $($Parameters.ImageName)"
-        $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
-        $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
-
-        $argMap = @{AttributeName="Automatic Backup Feature";AttributeValue="Enabled"}
-        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACSession -Arguments $argMap
-        if ($responseData.ReturnValue -ne 0)
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Set autobackup schedule'))
         {
-            throw "Attribute configuration failed with an error: $($responseData.Message)"
-        }
+            Write-Verbose "Automatic Backup is being scheduled for $($iDRACSession.ComputerName) with ImageName $($Parameters.ImageName)"
+            $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
+            $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
 
-        Write-Verbose "Creating Configuration Job on $($iDRACSession.ComputerName)"
-        $argMap = @{ScheduledStartTime="TIME_NOW"}
-        $responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateConfigJob -CimSession $iDRACSession -Arguments $argMap
-
-        if ($responseData.ReturnValue -eq 4096) 
-        {
-            if ($Passthru) 
+            $argMap = @{AttributeName="Automatic Backup Feature";AttributeValue="Enabled"}
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACSession -Arguments $argMap
+            if ($responseData.ReturnValue -ne 0)
             {
-                $responseData
-            } 
-            elseif ($Wait) 
-            {
-                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuration Job for $($iDRACSession.ComputerName)"
-                Write-Verbose "Configuration Job on $($iDRACSession.ComputerName) was successful"
+                throw "Attribute configuration failed with an error: $($responseData.Message)"
             }
-        } else 
-        {
-            Throw "Configuration Job Creation failed with error: $($responseData.Message)"
-        }
 
-        $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
-        $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
+            Write-Verbose "Creating Configuration Job on $($iDRACSession.ComputerName)"
+            $argMap = @{ScheduledStartTime="TIME_NOW"}
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateConfigJob -CimSession $iDRACSession -Arguments $argMap
 
-        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetBackupSchedule -CimSession $iDRACSession -Arguments $Parameters 2>&1
-
-        if ($responseData.ReturnValue -eq 4096) 
-        {
-            if ($Passthru) 
+            if ($responseData.ReturnValue -eq 4096) 
             {
-                $responseData
-            } 
-            elseif ($Wait) 
+                if ($Passthru) 
+                {
+                    $responseData
+                } 
+                elseif ($Wait) 
+                {
+                    Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuration Job for $($iDRACSession.ComputerName)"
+                    Write-Verbose "Configuration Job on $($iDRACSession.ComputerName) was successful"
+                }
+            } else 
             {
-                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Automatic Backup Schedule for $($iDRACSession.ComputerName)"
-                Write-Verbose "Automatic Backup Schedule on $($iDRACSession.ComputerName) was successful"
+                Throw "Configuration Job Creation failed with error: $($responseData.Message)"
             }
-        } 
-        else 
-        {
-            Throw "Automatic Backup Schedule failed with error: $($responseData.Message)"
+
+            $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
+            $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
+
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetBackupSchedule -CimSession $iDRACSession -Arguments $Parameters 2>&1
+
+            if ($responseData.ReturnValue -eq 4096) 
+            {
+                if ($Passthru) 
+                {
+                    $responseData
+                } 
+                elseif ($Wait) 
+                {
+                    Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Automatic Backup Schedule for $($iDRACSession.ComputerName)"
+                    Write-Verbose "Automatic Backup Schedule on $($iDRACSession.ComputerName) was successful"
+                }
+            } 
+            else 
+            {
+                Throw "Automatic Backup Schedule failed with error: $($responseData.Message)"
+            }
         }
+        
     }
 }
 
@@ -2489,7 +2512,7 @@ General notes
 #>
 function Set-PELCAttribute
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='low')]
     [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     Param
     (
@@ -2515,57 +2538,60 @@ function Set-PELCAttribute
 
     Process
     {
-        #Chekck if the attribute is settable.
-        $attribute = Get-PELCAttribute -iDRACSession $iDRACSession -AttributeName $AttributeName -Verbose
-        
-        if ($attribute)
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Set LC attribute'))
         {
-            if ($attribute.IsReadOnly -eq 'false')
+            #Check if the attribute is settable.
+            $attribute = Get-PELCAttribute -iDRACSession $iDRACSession -AttributeName $AttributeName -Verbose
+            
+            if ($attribute)
             {
-                Write-Verbose "setting PEBIOS attribute information ..."
-
-                #Check if the AttributeValue falls in the same set as the PossibleValues, call the helper function
-                if (TestPossibleValuesContainAttributeValues -PossibleValues $attribute.PossibleValues -AttributeValues $AttributeValue )
+                if ($attribute.IsReadOnly -eq 'false')
                 {
-                    try
-                    {
-                        $params = @{
-                            'AttributeName'  = $AttributeName
-                            'AttributeValue' = $AttributeValue
-                        }
+                    Write-Verbose "setting PEBIOS attribute information ..."
 
-                        $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACSession -Arguments $params
-                        if ($responseData.ReturnValue -eq 0)
+                    #Check if the AttributeValue falls in the same set as the PossibleValues, call the helper function
+                    if (TestPossibleValuesContainAttributeValues -PossibleValues $attribute.PossibleValues -AttributeValues $AttributeValue )
+                    {
+                        try
                         {
-                            Write-Verbose -Message 'LC attribute configured successfully'
-                            if ($responseData.RebootRequired -eq 'Yes')
+                            $params = @{
+                                'AttributeName'  = $AttributeName
+                                'AttributeValue' = $AttributeValue
+                            }
+
+                            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACSession -Arguments $params
+                            if ($responseData.ReturnValue -eq 0)
                             {
-                                Write-Verbose -Message 'LC attribute change requires reboot.'
+                                Write-Verbose -Message 'LC attribute configured successfully'
+                                if ($responseData.RebootRequired -eq 'Yes')
+                                {
+                                    Write-Verbose -Message 'LC attribute change requires reboot.'
+                                }
+                            }
+                            else
+                            {
+                                Write-Warning -Message "LC attribute change failed: $($responseData.Message)"
                             }
                         }
-                        else
+                        catch
                         {
-                            Write-Warning -Message "LC attribute change failed: $($responseData.Message)"
+                            Write-Error -Message $_
                         }
                     }
-                    catch
+                    else
                     {
-                        Write-Error -Message $_
+                        Write-Error -Message "Attribute value `"${AttributeValue}`" is not valid for attribute ${AttributeName}."
                     }
                 }
                 else
                 {
-                    Write-Error -Message "Attribute value `"${AttributeValue}`" is not valid for attribute ${AttributeName}."
+                    Write-Error -Message "${AttributeName} is readonly and cannot be configured."
                 }
             }
             else
             {
-                Write-Error -Message "${AttributeName} is readonly and cannot be configured."
+                Write-Error -Message "${AttributeName} does not exist in LC attributes."
             }
-        }
-        else
-        {
-            Write-Error -Message "${AttributeName} does not exist in LC attributes."
         }
     }
 
@@ -2606,7 +2632,7 @@ function Get-PELCState
        
     Begin
     {
-        $CimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
+
     }
 
     Process
@@ -2670,7 +2696,7 @@ function Get-PESystemAttribute
        
     Begin
     {
-        $CimOptions = New-CimSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -Encoding Utf8 -UseSsl
+        
     }
 
     Process
@@ -2853,7 +2879,9 @@ General notes
 #>
 function Update-PESystemFromRepository
 {
-    [CmdletBinding(DefaultParameterSetName='General')]
+    [CmdletBinding(DefaultParameterSetName='General',
+                    SupportsShouldProcess=$true,
+                    ConfirmImpact='low')]
     Param
     (
         [Parameter(Mandatory)]
@@ -2870,7 +2898,7 @@ function Update-PESystemFromRepository
         [Parameter(Mandatory,ParameterSetName='Wait')]
         [String]$ShareName,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [ValidateSet("NFS","CIFS")]
         [String]$ShareType = "CIFS",
 
@@ -2888,35 +2916,41 @@ function Update-PESystemFromRepository
     
     )
 
-    $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_SoftwareInstallationService";Name="DCIM:SoftwareUpdate";}
-    $instance = New-CimInstance -ClassName DCIM_SoftwareInstallationService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
-        
-    $Parameters = @{
-        IPAddress = $IPAddress
-        ShareName = $ShareName
-        ShareType = ([ShareType]$ShareType -as [int])
-        #Mountpoint = $ShareName
-        Username = $Credential.UserName
-        Password = $Credential.GetNetworkCredential().Password
-        CatalogFile = $CatalogFile
-        RebootNeeded = $RebootNeeded
-    }
-
-    if ($ValidateOnly)
+    Process 
     {
-        $Parameters.Add('ApplyUpdate',1)
-    }
-    else
-    {
-        $Parameters.Add('ApplyUpdate',0)
-    }
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Update system from repository'))
+        {
+            $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_SoftwareInstallationService";Name="DCIM:SoftwareUpdate";}
+            $instance = New-CimInstance -ClassName DCIM_SoftwareInstallationService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
+                
+            $Parameters = @{
+                IPAddress = $IPAddress
+                ShareName = $ShareName
+                ShareType = ([ShareType]$ShareType -as [int])
+                #Mountpoint = $ShareName
+                Username = $Credential.UserName
+                Password = $Credential.GetNetworkCredential().Password
+                CatalogFile = $CatalogFile
+                RebootNeeded = $RebootNeeded
+            }
 
-    $job = Invoke-CimMethod -InputObject $instance -MethodName InstallFromRepository -CimSession $iDRACSession -Arguments $Parameters
+            if ($ValidateOnly)
+            {
+                $Parameters.Add('ApplyUpdate',1)
+            }
+            else
+            {
+                $Parameters.Add('ApplyUpdate',0)
+            }
 
-    if ($ValidateOnly)
-    {
-        Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($iDRACSession.ComputerName)"
-        Get-PESystemRepositoryBasedUpdateList -iDRACSession $iDRACSession -Verbose
+            $job = Invoke-CimMethod -InputObject $instance -MethodName InstallFromRepository -CimSession $iDRACSession -Arguments $Parameters
+
+            if ($ValidateOnly)
+            {
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Importing System Configuration for $($iDRACSession.ComputerName)"
+                Get-PESystemRepositoryBasedUpdateList -iDRACSession $iDRACSession -Verbose
+            }
+        }
     }
 }
 
@@ -2985,7 +3019,7 @@ General notes
 #>
 function New-PESystemRebootJob
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='low')]
     Param
     (
         [Parameter(Mandatory)]
@@ -2999,14 +3033,20 @@ function New-PESystemRebootJob
     
     )
 
-    $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_SoftwareInstallationService";Name="DCIM:SoftwareUpdate";}
-    $instance = New-CimInstance -ClassName DCIM_SoftwareInstallationService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
-        
-    $Parameters = @{
-        RebootJobType = $RebootJobType
-    }
+    Process 
+    {
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'create new system reboot job'))
+        {
+            $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_SoftwareInstallationService";Name="DCIM:SoftwareUpdate";}
+            $instance = New-CimInstance -ClassName DCIM_SoftwareInstallationService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
+                
+            $Parameters = @{
+                RebootJobType = $RebootJobType
+            }
 
-    Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $iDRACSession -Arguments $Parameters
+            Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $iDRACSession -Arguments $Parameters
+        }
+    }
 }
 
 
