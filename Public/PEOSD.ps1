@@ -30,9 +30,12 @@ Function Get-PEDriverPackInformation {
 
     Process {
         $result = Invoke-CimMethod -InputObject $instance -MethodName GetDriverPackInfo -CimSession $iDRACSession
-        if ($result.ReturnValue -ne 0) {
+        if ($result.ReturnValue -ne 0) 
+        {
             Write-Error $result.Message
-        } else {
+        } 
+        else 
+        {
             $result
         }
     }
@@ -95,7 +98,8 @@ General notes
 #>
 function Set-PEBootToPXE
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true,
+                    ConfirmImpact='low')]
     param (
         [Parameter(Mandatory)]
         [Alias("s")]
@@ -103,20 +107,27 @@ function Set-PEBootToPXE
         $iDRACSession    
     )   
 
-    begin 
+    Begin 
     {
         $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_OSDeploymentService";Name="DCIM:OSDeploymentService";}
         $instance = New-CimInstance -ClassName DCIM_OSDeploymentService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
     }
 
-    process
+    Process
     {
-        $result = Invoke-CimMethod -InputObject $instance -MethodName BootToPXE -CimSession $iDRACSession
-        if ($result.ReturnValue -ne 0) {
-            Write-Error $result.Message
-        } else {
-            $result
-        }        
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Set boot to PXE'))
+        {
+            $result = Invoke-CimMethod -InputObject $instance -MethodName BootToPXE -CimSession $iDRACSession
+            if ($result.ReturnValue -ne 0) 
+            {
+                Write-Error $result.Message
+            } 
+            else 
+            {
+                $result
+            }   
+        }
+             
     }
 }
 
@@ -138,7 +149,8 @@ General notes
 #>
 function Set-PEBootToHD
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true,
+                    ConfirmImpact='low')]
     param (
         [Parameter(Mandatory)]
         [Alias("s")]
@@ -146,20 +158,26 @@ function Set-PEBootToHD
         $iDRACSession    
     )   
 
-    begin 
+    Begin 
     {
         $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_OSDeploymentService";Name="DCIM:OSDeploymentService";}
         $instance = New-CimInstance -ClassName DCIM_OSDeploymentService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
     }
 
-    process
+    Process
     {
-        $result = Invoke-CimMethod -InputObject $instance -MethodName BootToHD -CimSession $iDRACSession
-        if ($result.ReturnValue -ne 0) {
-            Write-Error $result.Message
-        } else {
-            $result
-        }        
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Set Boot to HD'))
+        {
+            $result = Invoke-CimMethod -InputObject $instance -MethodName BootToHD -CimSession $iDRACSession
+            if ($result.ReturnValue -ne 0) 
+            {
+                Write-Error $result.Message
+            } 
+            else 
+            {
+                $result
+            }
+        }
     }
 }
 
@@ -189,18 +207,21 @@ function Get-PEHostMACInformation
         $iDRACSession    
     )   
 
-    begin 
+    Begin 
     {
         $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_OSDeploymentService";Name="DCIM:OSDeploymentService";}
         $instance = New-CimInstance -ClassName DCIM_OSDeploymentService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
     }
 
-    process
+    Process
     {
         $result = Invoke-CimMethod -InputObject $instance -MethodName GetHostMACInfo -CimSession $iDRACSession
-        if ($result.ReturnValue -ne 0) {
+        if ($result.ReturnValue -ne 0) 
+        {
             Write-Error $result.Message
-        } else {
+        } 
+        else 
+        {
             $result
         }        
     }
@@ -265,7 +286,7 @@ function Connect-PERFSISOImage
         [Parameter(Mandatory)]
         [pscredential]$Credential,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [ValidateSet("NFS","CIFS")]
         [String]$ShareType = "CIFS",
         
@@ -277,13 +298,13 @@ function Connect-PERFSISOImage
         [String] $HashValue
     )   
 
-    begin 
+    Begin 
     {
         $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_OSDeploymentService";Name="DCIM:OSDeploymentService";}
         $instance = New-CimInstance -ClassName DCIM_OSDeploymentService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
     }
 
-    process
+    Process
     {
         $params= @{
             IPAddress = $IPAddress
@@ -326,13 +347,13 @@ function Get-PERFSISOImageConnectionInformation
         $iDRACSession
     )
 
-    begin 
+    Begin 
     {
         $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_OSDeploymentService";Name="DCIM:OSDeploymentService";}
         $instance = New-CimInstance -ClassName DCIM_OSDeploymentService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
     }
 
-    process
+    Process
     {
         Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName GetRFSISOImageConnectionInfo -Verbose
     }
@@ -364,13 +385,13 @@ function Get-PENetworkISOImageConnectionInformation
         $iDRACSession
     )
 
-    begin 
+    Begin 
     {
         $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_OSDeploymentService";Name="DCIM:OSDeploymentService";}
         $instance = New-CimInstance -ClassName DCIM_OSDeploymentService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
     }
 
-    process
+    Process
     {
         Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName GetNetworkISOImageConnectionInfo -Verbose
     }
