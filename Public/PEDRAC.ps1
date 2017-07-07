@@ -1,10 +1,12 @@
 ﻿function New-PEDRACSession
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='low')]
     [OutputType([Microsoft.Management.Infrastructure.CimSession])]
     param (
         [Parameter (Mandatory)]
-        [PSCredential] $Credential,
+        [PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential,
 
         [Parameter (Mandatory,
                     ValueFromPipeline=$true,
@@ -25,21 +27,26 @@
     Process
     {
         Write-Verbose "Creating iDRAC session..."
-        try
+
+        if ($PSCmdlet.ShouldProcess($IPAddress,'Create iDRAC session'))
         {
-            $session = New-CimSession -Authentication Basic -Credential $Credential -ComputerName $IPAddress -Port 443 -SessionOption $cimOptions -OperationTimeoutSec $MaxTimeout -ErrorAction Stop
-            if ($session)
+            try
             {
-                $sysInfo = Get-PESystemInformation -iDRACSession $Session
-                Add-Member -inputObject $Session -Name SystemGeneration -Value $([int](([regex]::Match($sysInfo.SystemGeneration,'\d+')).groups[0].Value)) -MemberType NoteProperty
-                Add-Member -inputObject $Session -Name SystemType -Value $([regex]::Match($sysInfo.SystemGeneration,'(?<=\s).*').groups[0].Value) -MemberType NoteProperty
-                return $session     
+                $session = New-CimSession -Authentication Basic -Credential $Credential -ComputerName $IPAddress -Port 443 -SessionOption $cimOptions -OperationTimeoutSec $MaxTimeout -ErrorAction Stop
+                if ($session)
+                {
+                    $sysInfo = Get-PESystemInformation -iDRACSession $Session
+                    Add-Member -inputObject $Session -Name SystemGeneration -Value $([int](([regex]::Match($sysInfo.SystemGeneration,'\d+')).groups[0].Value)) -MemberType NoteProperty
+                    Add-Member -inputObject $Session -Name SystemType -Value $([regex]::Match($sysInfo.SystemGeneration,'(?<=\s).*').groups[0].Value) -MemberType NoteProperty
+                    return $session     
+                }
+            }
+            catch
+            {
+                Write-Error -Message $_
             }
         }
-        catch
-        {
-            Write-Error -Message $_
-        }
+        
     }
 
     End
@@ -236,6 +243,11 @@ Function Reset-PEDRAC
 Function Get-PEDRACPrivilege 
 {
     [CmdletBinding()]
+    [OutputType([int])]
+    # Suppressing this for now, since there are 2 types of output
+    # This needs to be refactored -> https://github.com/rchaganti/DellPEWSMANTools/issues/21
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseOutputTypeCorrectly',
+        '', Scope='Function')]
     param (
         [Parameter(ParameterSetName='EncodeSpecial')]
         [ValidateSet('Admin','ReadOnly','Operator')]
@@ -281,7 +293,9 @@ Function Get-PEDRACPrivilege
 function Set-PEADRoleGroup
 {
     [CmdletBinding(DefaultParameterSetName='General',  
-                  PositionalBinding=$false)]
+                  PositionalBinding=$false,
+                  SupportsShouldProcess=$true,
+                  ConfirmImpact='low')]
     [OutputType([String])]
     Param
     (
@@ -386,25 +400,27 @@ function Set-PEADRoleGroup
     }
     Process 
     {
-        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
-
-        if ($responseData.ReturnValue -eq 4096)
-            {
-            if ($Passthru) 
-            {
-                $responseData
-            } 
-            elseif ($Wait) 
-            {
-                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Applying Configuration Changes to AD RoleGroup for $($iDRACsession.ComputerName)"
-                Write-Verbose "AD Role Group Settings Successfully Applied"
-            }
-        } 
-        else 
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Set AD Role group'))
         {
-            Throw "Job Creation failed with error: $($responseData.Message)"
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
+
+            if ($responseData.ReturnValue -eq 4096)
+                {
+                if ($Passthru) 
+                {
+                    $responseData
+                } 
+                elseif ($Wait) 
+                {
+                    Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Applying Configuration Changes to AD RoleGroup for $($iDRACsession.ComputerName)"
+                    Write-Verbose "AD Role Group Settings Successfully Applied"
+                }
+            } 
+            else 
+            {
+                Throw "Job Creation failed with error: $($responseData.Message)"
+            }
         }
-        
     }
     End
     {
@@ -413,7 +429,9 @@ function Set-PEADRoleGroup
 
 function Set-PECommonADSetting
 {
-    [CmdletBinding(DefaultParameterSetName='General')]
+    [CmdletBinding(DefaultParameterSetName='General',
+                    SupportsShouldProcess=$true,
+                    ConfirmImpact='low')]
     Param
     (
         [Parameter(Mandatory, 
@@ -574,25 +592,26 @@ function Set-PECommonADSetting
     }
     Process
     {
-
-        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACSession -Arguments $params 2>&1
-        if ($responseData.ReturnValue -eq 4096) 
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName), 'Set common AD setting'))
         {
-            if ($Passthru) 
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACSession -Arguments $params 2>&1
+            if ($responseData.ReturnValue -eq 4096) 
             {
-                $responseData
+                if ($Passthru) 
+                {
+                    $responseData
+                } 
+                elseif ($Wait) 
+                {
+                    Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Applying Configuration Changes to Comman AD Settings for $($iDRACsession.ComputerName)"
+                    Write-Verbose "Changes to Common AD Settings applied successfully"
+                }
             } 
-            elseif ($Wait) 
+            else 
             {
-                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Applying Configuration Changes to Comman AD Settings for $($iDRACsession.ComputerName)"
-                Write-Verbose "Changes to Common AD Settings applied successfully"
+                Throw "Job Creation failed with error: $($responseData.Message)"
             }
-        } 
-        else 
-        {
-            Throw "Job Creation failed with error: $($responseData.Message)"
         }
-
     }
     End
     {
@@ -602,7 +621,9 @@ function Set-PECommonADSetting
 function Set-PEDRACUser
 {
     [CmdletBinding(DefaultParameterSetName='General',  
-                  PositionalBinding=$false)]
+                  PositionalBinding=$false,
+                  SupportsShouldProcess=$true,
+                  ConfirmImpact='low')]
     [OutputType([String])]
     Param
     (
@@ -634,6 +655,7 @@ function Set-PEDRACUser
         [Parameter(ParameterSetName='Passthru')]
         [Alias("cred")]
 		[PSCredential]
+        [System.Management.Automation.Credential()]
         $credential,
 
         # user privilege 
@@ -743,21 +765,25 @@ function Set-PEDRACUser
     }
     Process
     {
-        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
-        if ($responseData.ReturnValue -eq 4096) 
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName), 'invoke method ApplyAttributes'))
         {
-            if ($Passthru) 
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
+            if ($responseData.ReturnValue -eq 4096) 
             {
-                $responseData
-            } 
-            elseif ($Wait) 
-            {
-                Wait-PEConfigurationJob -iDRACSession $iDRACsession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring iDRAC user for $($iDRACsession.ComputerName)"
-                Write-Verbose "iDRAC User configured successfully"
+                if ($Passthru) 
+                {
+                    $responseData
+                } 
+                elseif ($Wait) 
+                {
+                    Wait-PEConfigurationJob -iDRACSession $iDRACsession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring iDRAC user for $($iDRACsession.ComputerName)"
+                    Write-Verbose "iDRAC User configured successfully"
+                }
+            } else {
+                Throw "Job Creation failed with error: $($responseData.Message)"
             }
-        } else {
-            Throw "Job Creation failed with error: $($responseData.Message)"
         }
+        
     }
     End
     {
@@ -766,7 +792,9 @@ function Set-PEDRACUser
 
 function Set-PEStandardSchemaSetting
 {
-    [CmdletBinding(DefaultParameterSetName='General')]
+    [CmdletBinding(DefaultParameterSetName='General',
+                    SupportsShouldProcess=$true,
+                    ConfirmImpact='low')]
     Param
     (
         [Parameter(Mandatory=$true, 
@@ -847,23 +875,27 @@ function Set-PEStandardSchemaSetting
     }
     Process
     {
-        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
-        if ($responseData.ReturnValue -eq 4096) 
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'set Standard schema setting'))
         {
-            if ($Passthru) 
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
+            if ($responseData.ReturnValue -eq 4096) 
             {
-                $responseData
+                if ($Passthru) 
+                {
+                    $responseData
+                } 
+                elseif ($Wait) 
+                {
+                    Wait-PEConfigurationJob -iDRACSession $iDRACsession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring Standard Schema Settings for $($iDRACsession.ComputerName)"
+                    Write-Verbose "Standard Schema Configured successfully"
+                }
             } 
-            elseif ($Wait) 
+            else 
             {
-                Wait-PEConfigurationJob -iDRACSession $iDRACsession -JobID $responseData.Job.EndpointReference.InstanceID -Activity "Configuring Standard Schema Settings for $($iDRACsession.ComputerName)"
-                Write-Verbose "Standard Schema Configured successfully"
+                Throw "Job Creation failed with error: $($responseData.Message)"
             }
-        } 
-        else 
-        {
-            Throw "Job Creation failed with error: $($responseData.Message)"
         }
+        
     }
 }
 
@@ -872,7 +904,7 @@ function Get-PEADGroupInfo
 {
     [CmdletBinding(DefaultParameterSetName='General',  
                   PositionalBinding=$false)]
-    [OutputType([String])]
+    [OutputType([System.Collections.HashTable])]
     Param
     (
         # iDRAC Session
@@ -892,7 +924,7 @@ function Get-PEADGroupInfo
         
         Write-Verbose "Retrieving AD Group Information for $($iDRACsession.ComputerName)"
         $map = @{}
-        $users = 1..5 | % {"ADGroup"+$_} 
+        $users = 1..5 | Foreach-Object -Process {"ADGroup"+$_} 
         foreach ($user in $users)
         {
             $map.$user = @{"Privilege"="";"Domain"="";"Name"=""}
@@ -923,7 +955,7 @@ function Get-PEDRACUser
 {
     [CmdletBinding(DefaultParameterSetName='General',  
                   PositionalBinding=$false)]
-    [OutputType([String])]
+    [OutputType([System.Collections.HashTable])]
     Param
     (
         # iDRAC Session
@@ -944,7 +976,7 @@ function Get-PEDRACUser
         Write-Verbose "Retrieving iDRAC User Details for $($iDRACsession.ComputerName)"
         Try{
             $map = @{}
-            $users = 1..16 | % {"User"+$_} 
+            $users = 1..16 | Foreach-Object -Process {"User"+$_} 
             foreach ($user in $users)
             {
                 $map.$user = @{"Privilege"="";"Enable"="";"UserName"=""}
@@ -1018,7 +1050,7 @@ function Import-PECertificate
         [Parameter(ParameterSetName='Wait')]
         [Parameter(ParameterSetName='Passthru')]
         [Alias("pass")] 
-        [string]
+        [SecureString]
         $passphrase,
 
         # Certificate Filename
@@ -1104,7 +1136,9 @@ function Import-PECertificate
 
         if ($passphrase) 
         {
-            $params.Passphrase = $passphrase
+            # First create the credential out of the secure string and then fetch the clear text value of passphrase
+            $tempCred = New-Object -Typename PSCredential -ArgumentList 'temp',$passphrase
+            $params.Passphrase = $tempCred.GetNetworkCredntial().Password
         }
 
         if ($webServerCertificate) 
@@ -1148,7 +1182,7 @@ Function Find-PEDRAC
 {
     [CmdletBinding(DefaultParameterSetName='General',  
                   PositionalBinding=$false)]
-    [OutputType([String])]
+    [OutputType([System.Collections.Hashtable])]
     Param
     (
         #ipStartRange 
@@ -1172,6 +1206,7 @@ Function Find-PEDRAC
                    ParameterSetName='General')]
         [Alias ("cred")]
         [PSCredential]
+        [System.Management.Automation.Credential()]
         $credential,
 
         # Details switch
@@ -1186,8 +1221,14 @@ Function Find-PEDRAC
         function Find-PEDRAC_
         {
             [CmdletBinding(DefaultParameterSetName='General', 
-                          PositionalBinding=$false)]
-            [OutputType([String])]
+                          PositionalBinding=$false,
+                          SupportsShouldProcess=$true)]
+            [OutputType([System.Collections.Hashtable])]
+            # Suppressing the vars assignment rule because of the below bugs in the PSScriptAnalyzer v1.15.0     
+            # https://github.com/PowerShell/PSScriptAnalyzer/issues/711
+            # https://github.com/PowerShell/PSScriptAnalyzer/issues/699
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments',
+                 '', Scope='Function')]
             Param
             (
                 #ipStartRange 
@@ -1211,6 +1252,7 @@ Function Find-PEDRAC
                            ParameterSetName='General')]
                 [Alias ("cred")]
                 [PSCredential]
+                [System.Management.Automation.Credential()]
                 $credential,
 
                 # Details switch
@@ -1235,63 +1277,77 @@ Function Find-PEDRAC
 
                     if ($firstthree -ne $firstthreecheck)
                     {
-                        Write-Error "IP range is not correct"
-                        return 0
+                        throw "IP range is not correct"
+                        #return 0
                     }
 
-                    $ipList = $start..$end | % {$firstthree+"."+$_} #get ip range
+                    $ipList = $start..$end | Foreach-Object -Process {$firstthree+"."+$_} #get ip range
                     Write-Verbose "Total number of IPs = $($ipList.Count)"
 
                     $cmd = {
-                    param($ip,$credential,$deepDiscover)
-                    $finalresultList = @{}
-                    $credential | ForEach-Object {
-                        [xml]$result = ""
-                        try{
-                        [xml]$result = winrm id -u:$_.GetNetworkCredential().UserName -p:$_.GetNetworkCredential().Password -r:https://$ip/wsman -SkipCNCheck -SkipCACheck -encoding:utf-8 -a:basic -format:pretty 2>&1
-          
-                        if ($result.ChildNodes[0].ProductName -eq ("iDRAC") -or $result.ChildNodes[0].ProductName -eq("Integrated Dell Remote Access Controller")){
-                                try
-                                {
-                                    $productName, $SystemType, $LCVersion, $iDRACVersion = $result.ChildNodes[0].ProductVersion.split(':')
-                                    $SystemType = $SystemType.split('=')[1].Trim()
-                                    $LCVersion = $LCVersion.split('=')[1].Trim()
-                                    $iDRACVersion = $iDRACVersion.split('=')[1].Trim()
-                                }
-                                catch
-                                {
-                                    $productName, $SystemType, $LCVersion, $iDRACVersion = $null, $null, $null, $null
-                                }
-                                $finalresultList[$ip] = @{
-                                                            #UserName = $_.GetNetworkCredential().UserName;
-                                                            #Password = $_.GetNetworkCredential().Password;
-                                                            ProductVersion = $result.ChildNodes[0].ProductVersion;
-                                                            Product = $result.ChildNodes[0].ProductName;
-                                                            SystemType = $SystemType;
-                                                            LCVersion = $LCVersion;
-                                                            iDRACVersion = $iDRACVersion
-                                                         }
-                                if ($deepDiscover)
+                        param(
+                            $ip,
+                            [pscredential]
+                            [System.Management.Automation.Credential()]
+                            $credential,
+                            $deepDiscover
+                        )
+                        $finalresultList = @{}
+                        $credential | ForEach-Object -Process {
+                            [xml]$result = ""
+                            try
+                            {
+                                [xml]$result = winrm id -u:$_.GetNetworkCredential().UserName -p:$_.GetNetworkCredential().Password -r:https://$ip/wsman -SkipCNCheck -SkipCACheck -encoding:utf-8 -a:basic -format:pretty 2>&1
+                
+                                if (
+                                    ($result.ChildNodes[0].ProductName -eq "iDRAC") -or 
+                                    ($result.ChildNodes[0].ProductName -eq "Integrated Dell Remote Access Controller")
+                                )
                                 {
                                     try
                                     {
-                                        $session = New-PEDRACSession -IPAddress $ip -Credential $_
-                                        $result2 = Get-PESystemInformation -iDRACSession $session 2>&1
-                                        $finalresultList[$ip].add('ServiceTag',$result2.ServiceTag)
-                                        $finalresultList[$ip].add('Model',$result2.Model)
-                                        $finalresultList[$ip].add('PowerState',$result2.PowerState)
+                                        $productName, $SystemType, $LCVersion, $iDRACVersion = $result.ChildNodes[0].ProductVersion.split(':')
+                                        $SystemType = $SystemType.split('=')[1].Trim()
+                                        $LCVersion = $LCVersion.split('=')[1].Trim()
+                                        $iDRACVersion = $iDRACVersion.split('=')[1].Trim()
                                     }
-
-                                    catch{
-                                        Write-Error "$_"
+                                    catch
+                                    {
+                                        $productName, $SystemType, $LCVersion, $iDRACVersion = $null, $null, $null, $null
                                     }
-                                }
-                                $finalresultList
-                                break
-                            } 
-                        }
-                        catch{}
-                    } 
+                                    $finalresultList[$ip] = @{
+                                                                #UserName = $_.GetNetworkCredential().UserName;
+                                                                #Password = $_.GetNetworkCredential().Password;
+                                                                ProductVersion = $result.ChildNodes[0].ProductVersion;
+                                                                Product = $result.ChildNodes[0].ProductName;
+                                                                SystemType = $SystemType;
+                                                                LCVersion = $LCVersion;
+                                                                iDRACVersion = $iDRACVersion
+                                                            }
+                                    if ($deepDiscover)
+                                    {
+                                        try
+                                        {
+                                            $session = New-PEDRACSession -IPAddress $ip -Credential $_
+                                            $result2 = Get-PESystemInformation -iDRACSession $session 2>&1
+                                            $finalresultList[$ip].add('ServiceTag',$result2.ServiceTag)
+                                            $finalresultList[$ip].add('Model',$result2.Model)
+                                            $finalresultList[$ip].add('PowerState',$result2.PowerState)
+                                        }
+                                        catch
+                                        {
+                                            Write-Error "$_"
+                                        }
+                                    }
+                                    $finalresultList
+                                    break
+                                } 
+                            }
+                            catch 
+                            {
+                                Write-Error 
+                            }
+                        } 
                     }
                     $jobs=@() 
                     $ipList | ForEach-Object {
@@ -1308,11 +1364,11 @@ Function Find-PEDRAC
                 }
             }
         }
-        if( $Credential.GetNetworkCredential().UserName -eq $null)
+        if( $null -eq $Credential.GetNetworkCredential().UserName)
         {
             Throw "Username cannot be empty"
         }
-        if( $Credential.GetNetworkCredential().Password -eq $null)
+        if( $null -eq $Credential.GetNetworkCredential().Password)
         {
             Throw "Password cannot be empty"
         }        
