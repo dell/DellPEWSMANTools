@@ -398,8 +398,10 @@ General notes
 #>
 Function New-PETargetedConfigurationJob 
 {
-    [CmdletBinding(DefaultParameterSetName='General')]
-
+    [CmdletBinding(DefaultParameterSetName='General',
+                    SupportsShouldProcess=$true,
+                    ConfirmImpact='low')]
+    [OutputType([System.Collections.Hashtable])]
     param (
         [Parameter(Mandatory, ParameterSetName='General')]
         [Parameter(Mandatory, ParameterSetName='Passthru')]
@@ -475,22 +477,25 @@ Function New-PETargetedConfigurationJob
 
     Process 
     {
-        $Job = Invoke-CimMethod -InputObject $instance -MethodName CreateTargetedConfigJob -CimSession $idracsession -Arguments $Parameters
-        if ($Job.ReturnValue -eq 4096) 
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'create targeted configuration job'))
         {
-            if ($PSCmdlet.ParameterSetName -eq 'Passthru') 
+            $Job = Invoke-CimMethod -InputObject $instance -MethodName CreateTargetedConfigJob -CimSession $idracsession -Arguments $Parameters
+            if ($Job.ReturnValue -eq 4096) 
             {
-                $Job
+                if ($PSCmdlet.ParameterSetName -eq 'Passthru') 
+                {
+                    $Job
+                } 
+                elseif ($PSCmdlet.ParameterSetName -eq 'Wait') 
+                {
+                    Write-Verbose 'Starting configuration job ...'
+                    Wait-PEConfigurationJob -JobID $Job.Job.EndpointReference.InstanceID -Activity 'Performing RAID Configuration ..'                
+                }
             } 
-            elseif ($PSCmdlet.ParameterSetName -eq 'Wait') 
+            else 
             {
-                Write-Verbose 'Starting configuration job ...'
-                Wait-PEConfigurationJob -JobID $Job.Job.EndpointReference.InstanceID -Activity 'Performing RAID Configuration ..'                
+                Write-Error $Job.Message
             }
-        } 
-        else 
-        {
-            Write-Error $Job.Message
         }
     }
 }
@@ -574,7 +579,7 @@ General notes
 #>
 Function New-PEJobQueue 
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='low')]
 
     param (
         [Parameter(Mandatory)]
@@ -612,13 +617,17 @@ Function New-PEJobQueue
 
     Process 
     {
-        $Job = Invoke-CimMethod -InputObject $instance -MethodName SetupJobQueue -CimSession $idracsession -Arguments $Parameters
-        $Job
-        #if ($Job.ReturnValue -eq 0) {
-        #    Write-Verbose "New job created with an ID - $($Job.Job.EndpointReference.InstanceID)"
-        #} else {
-        #    $Job
-        #}
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Create job queue'))
+        {
+            $Job = Invoke-CimMethod -InputObject $instance -MethodName SetupJobQueue -CimSession $idracsession -Arguments $Parameters
+            $Job
+            #if ($Job.ReturnValue -eq 0) {
+            #    Write-Verbose "New job created with an ID - $($Job.Job.EndpointReference.InstanceID)"
+            #} else {
+            #    $Job
+            #}
+        }
+        
     }
 }
 
@@ -691,11 +700,7 @@ General notes
 #>
 function Get-PEPCIeSSDExtender
 {
-    [CmdletBinding(
-        SupportsShouldProcess=$true,
-        ConfirmImpact="High"
-    )]
-
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [Alias("s")]
@@ -728,11 +733,7 @@ General notes
 #>
 function Get-PEPCIeSSDBackPlane
 {
-    [CmdletBinding(
-        SupportsShouldProcess=$true,
-        ConfirmImpact="High"
-    )]
-
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [Alias("s")]
