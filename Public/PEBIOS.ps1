@@ -205,63 +205,66 @@ function Set-PEBIOSAttribute
 
     Process
     {
-        #Chekck if the attribute is settable.
-        $attribute = Get-PEBIOSAttribute -iDRACSession $iDRACSession -AttributeName $AttributeName -Verbose
-        
-        if ($attribute)
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Set BIOS attribute'))
         {
-            if ($attribute.IsReadOnly -eq 'false')
+            #Check if the attribute is settable.
+            $attribute = Get-PEBIOSAttribute -iDRACSession $iDRACSession -AttributeName $AttributeName -Verbose
+            
+            if ($attribute)
             {
-                Write-Verbose "setting PEBIOS attribute information ..."
-
-                #Check if the AttributeValue falls in the same set as the PossibleValues by calling the helper function
-                if (TestPossibleValuesContainAttributeValues -PossibleValues $attribute.PossibleValues -AttributeValues $AttributeValue )
+                if ($attribute.IsReadOnly -eq 'false')
                 {
-                    if ($PSCmdlet.ShouldProcess($AttributeValue, 'Set BIOS attribute'))
+                    Write-Verbose "setting PEBIOS attribute information ..."
+
+                    #Check if the AttributeValue falls in the same set as the PossibleValues by calling the helper function
+                    if (TestPossibleValuesContainAttributeValues -PossibleValues $attribute.PossibleValues -AttributeValues $AttributeValue )
                     {
-
-                        try
+                        if ($PSCmdlet.ShouldProcess($AttributeValue, 'Set BIOS attribute'))
                         {
-                            $params = @{
-                                'Target'         = 'BIOS.Setup.1-1'
-                                'AttributeName'  = $AttributeName
-                                'AttributeValue' = $AttributeValue
-                            }
 
-                            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACsession -Arguments $params
-                            if ($responseData.ReturnValue -eq 0)
+                            try
                             {
-                                Write-Verbose -Message 'BIOS attribute configured successfully'
-                                if ($responseData.RebootRequired -eq 'Yes')
+                                $params = @{
+                                    'Target'         = 'BIOS.Setup.1-1'
+                                    'AttributeName'  = $AttributeName
+                                    'AttributeValue' = $AttributeValue
+                                }
+
+                                $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetAttribute -CimSession $iDRACsession -Arguments $params
+                                if ($responseData.ReturnValue -eq 0)
                                 {
-                                    Write-Verbose -Message 'BIOS attribute change requires reboot.'
+                                    Write-Verbose -Message 'BIOS attribute configured successfully'
+                                    if ($responseData.RebootRequired -eq 'Yes')
+                                    {
+                                        Write-Verbose -Message 'BIOS attribute change requires reboot.'
+                                    }
+                                }
+                                else
+                                {
+                                    Write-Warning -Message "BIOS attribute change failed: $($responseData.Message)"
                                 }
                             }
-                            else
+                            catch
                             {
-                                Write-Warning -Message "BIOS attribute change failed: $($responseData.Message)"
+                                Write-Error -Message $_
                             }
                         }
-                        catch
-                        {
-                            Write-Error -Message $_
-                        }
+                        
                     }
-                    
+                    else
+                    {
+                        Write-Error -Message "Attribute value `"${AttributeValue}`" is not valid for attribute ${AttributeName}."
+                    }
                 }
                 else
                 {
-                    Write-Error -Message "Attribute value `"${AttributeValue}`" is not valid for attribute ${AttributeName}."
+                    Write-Error -Message "${AttributeName} is readonly and cannot be configured."
                 }
             }
             else
             {
-                Write-Error -Message "${AttributeName} is readonly and cannot be configured."
+                Write-Error -Message "${AttributeName} does not exist in PEBIOS attributes."
             }
-        }
-        else
-        {
-            Write-Error -Message "${AttributeName} does not exist in PEBIOS attributes."
         }
     }
 
