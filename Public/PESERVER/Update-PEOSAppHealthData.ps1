@@ -44,8 +44,8 @@ function Update-PEOSAppHealthData
         $iDRACSession,
 
         [Parameter(ParameterSetName='General')]
-        [Parameter(Mandatory,ParameterSetName='Passthru')]
-        [Parameter(Mandatory,ParameterSetName='Wait')]
+        [Parameter(ParameterSetName='Passthru')]
+        [Parameter(ParameterSetName='Wait')]
         [ValidateSet('AgentLiteOSPlugin','Manual')]
         [String]$UpdateType = 'AgentLiteOSPlugin',
         
