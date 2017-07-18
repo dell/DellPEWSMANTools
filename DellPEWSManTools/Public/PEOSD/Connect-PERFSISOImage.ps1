@@ -89,6 +89,6 @@ function Connect-PERFSISOImage
             HashValue = $HashValue
         }
 
-        Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName ConnectRFSISOImage -Arguments $params -Verbose
+        Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName ConnectRFSISOImage -Arguments $params
     }
 }

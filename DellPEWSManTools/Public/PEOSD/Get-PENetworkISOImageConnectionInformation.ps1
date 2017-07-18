@@ -32,6 +32,6 @@ function Get-PENetworkISOImageConnectionInformation
 
     Process
     {
-        Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName GetNetworkISOImageConnectionInfo -Verbose
+        Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName GetNetworkISOImageConnectionInfo
     }
 }
