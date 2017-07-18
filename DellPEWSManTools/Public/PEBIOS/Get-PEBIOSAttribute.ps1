@@ -60,7 +60,7 @@ function Get-PEBIOSAttribute
                 $filter = $null
             }
 
-            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_BIOSEnumeration -Namespace root\dcim -Filter $filter
+            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_BIOSEnumeration -Namespace root\dcim -Filter $filter -ErrorAction Stop
         }
         catch
         {
