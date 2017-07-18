@@ -29,6 +29,6 @@ function Get-PEMemory
     Process
     {
         Write-Verbose "Getting System Information for $($iDRACSession.ComputerName) ..."
-        Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_MemoryView" -Namespace "root/dcim"
+        Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_MemoryView -Namespace "root/dcim"
     }
 }
