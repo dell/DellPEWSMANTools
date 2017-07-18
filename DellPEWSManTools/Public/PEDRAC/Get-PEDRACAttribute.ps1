@@ -44,7 +44,7 @@ function Get-PEDRACAttribute
                 $filter = $null
             }
 
-            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_iDRACCardAttribute -Namespace root\dcim -Filter $filter
+            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_iDRACCardAttribute -Namespace root\dcim -Filter $filter -ErrorAction Stop
         }
         catch
         {
