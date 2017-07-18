@@ -110,7 +110,7 @@ function Set-PEADRoleGroup
     {
         if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Set AD Role group'))
         {
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params # 2>&1
 
             if ($responseData.ReturnValue -eq 4096)
                 {

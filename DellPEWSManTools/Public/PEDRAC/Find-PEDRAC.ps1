@@ -148,8 +148,8 @@ Function Find-PEDRAC
                                     {
                                         try
                                         {
-                                            $session = New-PEDRACSession -IPAddress $ip -Credential $_
-                                            $result2 = Get-PESystemInformation -iDRACSession $session 2>&1
+                                            $session = New-PEDRACSession -IPAddress $ip -Credential $_ -ErrorAction Stop
+                                            $result2 = Get-PESystemInformation -iDRACSession $session -ErrorAction Stop  #2>&1
                                             $finalresultList[$ip].add('ServiceTag',$result2.ServiceTag)
                                             $finalresultList[$ip].add('Model',$result2.Model)
                                             $finalresultList[$ip].add('PowerState',$result2.PowerState)

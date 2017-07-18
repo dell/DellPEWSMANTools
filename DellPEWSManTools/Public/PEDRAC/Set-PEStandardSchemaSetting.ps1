@@ -85,7 +85,7 @@ function Set-PEStandardSchemaSetting
     {
         if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'set Standard schema setting'))
         {
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params 2>&1
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACsession -Arguments $params #2>&1
             if ($responseData.ReturnValue -eq 4096) 
             {
                 if ($Passthru) 

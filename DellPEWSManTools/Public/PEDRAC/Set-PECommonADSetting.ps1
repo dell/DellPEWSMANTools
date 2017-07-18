@@ -165,7 +165,7 @@ function Set-PECommonADSetting
     {
         if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName), 'Set common AD setting'))
         {
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACSession -Arguments $params 2>&1
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName ApplyAttributes -CimSession $iDRACSession -Arguments $params #2>&1
             if ($responseData.ReturnValue -eq 4096) 
             {
                 if ($Passthru) 

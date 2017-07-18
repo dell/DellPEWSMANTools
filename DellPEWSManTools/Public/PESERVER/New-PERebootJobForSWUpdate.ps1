@@ -78,7 +78,7 @@ function New-PERebootJobForSWUpdate
     {
         if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Create new reboot job for software update'))
         {
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $iDRACSession -Arguments $params 2>&1
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName CreateRebootJob -CimSession $iDRACSession -Arguments $params #2>&1
             if ($responseData.ReturnValue -eq 4096) 
             {
                 if ($Passthru) 
