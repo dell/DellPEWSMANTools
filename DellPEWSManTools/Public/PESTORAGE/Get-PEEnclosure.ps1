@@ -25,6 +25,6 @@ Function Get-PEEnclosure
     )
     Process
     {
-        Get-CimInstance -CimSession $iDRACSession -ResourceUri 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_EnclosureView' -Namespace 'root/dcim'
+        Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_EnclosureView -Namespace 'root/dcim'
     }
 }
