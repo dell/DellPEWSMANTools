@@ -26,6 +26,6 @@ Function Get-PEVirtualDisk
     
     Process
     {
-        Get-CimInstance -CimSession $iDRACSession -ResourceUri 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_VirtualDiskView' -Namespace 'root/dcim'
+        Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_VirtualDiskView -Namespace 'root/dcim'
     }
 }

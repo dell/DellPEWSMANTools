@@ -32,6 +32,6 @@ function Get-PERFSISOImageConnectionInformation
 
     Process
     {
-        Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName GetRFSISOImageConnectionInfo -Verbose
+        Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName GetRFSISOImageConnectionInfo
     }
 }

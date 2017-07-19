@@ -30,8 +30,8 @@ function Get-PEADGroupInfo
 
         try
         {
-            $responseData = Get-CimInstance -CimSession $iDRACsession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardAttribute" -Namespace "root/dcim" -Query 'Select CurrentValue, InstanceID from DCIM_iDRACCardAttribute where  InstanceID like "%ADGroup.%"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL" 2>&1
-
+            #$responseData = Get-CimInstance -CimSession $iDRACsession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_iDRACCardAttribute" -Namespace "root/dcim" -Query 'Select CurrentValue, InstanceID from DCIM_iDRACCardAttribute where  InstanceID like "%ADGroup.%"' -QueryDialect "http://schemas.microsoft.com/wbem/wsman/1/WQL" 2>&1
+            $responseData = Get-CimInstance -CimSession $iDRACsession -ClassName DCIM_iDRACCardAttribute -Namespace "root/dcim" -Filter 'InstanceID like "%ADGroup.%"' -Property InstanceID, CurrentValue -ErrorAction Stop
             foreach ($resp in $responseData){
                     $number = $resp.InstanceID.Split("#")[1].Split(".")[1]
                     $entity = $resp.InstanceID.Split("#")[-1]

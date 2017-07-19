@@ -28,6 +28,6 @@ function Get-PENetworkDevice
     Process 
     {
         Write-Verbose "Getting Network device Information for $($iDRACSession.ComputerName) ..."
-        Get-CimInstance -ResourceUri 'http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_NICView' -Namespace root\dcim -CimSession $iDRACSession
+        Get-CimInstance -ClassName DCIM_NICView -Namespace 'root\dcim' -CimSession $iDRACSession
     }
 }

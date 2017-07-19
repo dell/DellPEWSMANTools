@@ -44,6 +44,6 @@ Function Get-PEAvailableDisk
 
     Process 
     {
-        Get-CimInstance -CimSession $iDRACSession -ResourceUri 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_PhysicalDiskView' -Namespace 'root/dcim'
+        Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_PhysicalDiskView -Namespace 'root/dcim'
     }
 }

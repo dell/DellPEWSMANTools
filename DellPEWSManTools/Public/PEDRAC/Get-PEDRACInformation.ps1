@@ -20,7 +20,7 @@ function Get-PEDRACInformation
         Write-Verbose "Retrieving PEDRAC information ..."
         try
         {
-            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_iDRACCardView -Namespace root\dcim
+            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_iDRACCardView -Namespace root\dcim -ErrorAction Stop
         }
         catch
         {

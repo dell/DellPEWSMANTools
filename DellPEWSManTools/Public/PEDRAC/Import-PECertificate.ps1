@@ -132,7 +132,7 @@ function Import-PECertificate
     {
 
         Write-Verbose "Importing Certificate to $($iDRACsession.ComputerName)"
-        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ImportSSLCertificate -CimSession $iDRACsession -Arguments $params 2>&1
+        $responseData = Invoke-CimMethod -InputObject $instance -MethodName ImportSSLCertificate -CimSession $iDRACsession -Arguments $params #2>&1
         if ($responseData.ReturnValue -eq 4096) 
         {
             if ($Passthru) 

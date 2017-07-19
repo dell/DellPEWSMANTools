@@ -32,7 +32,7 @@ function Get-PESystemInformation
     {
 
         Write-Verbose "Getting System Information for $($iDRACSession.ComputerName) ..."
-        Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_SystemView" -Namespace "root/dcim"
+        Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_SystemView -Namespace "root/dcim"
     
     }
 }

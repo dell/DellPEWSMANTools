@@ -313,7 +313,7 @@ function Set-PEAutobackupSchedule
             $properties=@{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
             $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
 
-            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetBackupSchedule -CimSession $iDRACSession -Arguments $Parameters 2>&1
+            $responseData = Invoke-CimMethod -InputObject $instance -MethodName SetBackupSchedule -CimSession $iDRACSession -Arguments $Parameters #2>&1
 
             if ($responseData.ReturnValue -eq 4096) 
             {

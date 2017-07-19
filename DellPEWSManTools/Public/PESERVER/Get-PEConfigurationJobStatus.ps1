@@ -46,7 +46,8 @@ Function Get-PEConfigurationJobStatus
     {
         try 
         {
-            $job = Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_LifecycleJob" -Namespace "root/dcim" -Query "SELECT * FROM DCIM_LifecycleJob Where InstanceID='$JobID'"
+            #$job = Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_LifecycleJob" -Namespace "root/dcim" -Query "SELECT * FROM DCIM_LifecycleJob Where InstanceID='$JobID'"
+            $job = Get-CimInstance -CimSession $iDRACSession -Namespace "root/dcim" -ClassName DCIM_LifecycleJob -Filter "InstanceID='$JobID'" -ErrorAction Stop
             if ($job) 
             {
                 if ($Wait) 
