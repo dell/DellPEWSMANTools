@@ -1,110 +1,11 @@
 <#
-.Synopsis
-   Retrieves requested LCLog entry/entries 
-.DESCRIPTION
-   The Get-PELCLog cmdlet enumerates LCLogs. Based on input parameters, it may retreive complete LC Log or filter it out. 
-   It also can export the complete LC Logs or the active LC Logs. A user may opt to use the built-in share for the cmdlet.
-   This cmdlet requires the iDRACSession input parameter obtained from New-PEDRACSession cmdlet.
-   This cmdlet requires the following parameters in case -exportType is specified,
+Get-PELCLog.ps1 - GET PE LC log.
 
-        IPAddress The IP address of the target export server.
-        ShareName The directory path to the mount point.
-        FileName  The target output file name.
-        ShareType Type of share: NFS, CIFS
-        Credential Username and Password
-        Workgroup The applicable workgroup.
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
-    Alternatively, a share object may be created using Get-PEConfigurationShare and passed into the cmdlet as a ShareObject. 
-    In this case, for exporting, only filename parameter will be required other than this.
+Copyright (c) 2017, Dell, Inc.
 
-    The cmdlet will Throw an error if it fails.
-
-.PARAMETER iDRACSession
-The session object created by New-PEDRACSession.
-
-.PARAMETER RecordID
-Filter results based on RecordID.
-
-.PARAMETER AgentID
-Filter results based on AgentID.
-
-.PARAMETER Category
-Filter results based on Category.
-
-.PARAMETER Severity
-Filter results based on Severity.
-
-.PARAMETER ExportType
-Setting this value indicates the Logs are expected to be exported to a share location. Possible values ActiveLogs, All.
-
-.PARAMETER ShareObject
-A share object obtained through Get-PEConfigurationShare cmdlet.
-
-.PARAMETER IPAddress
-IP Address of the share location.
-
-.PARAMETER FileName
-Filename whre the log needs to be exported.
-
-.PARAMETER ShareName
-Name of Share.
-
-.PARAMETER ShareType
-Type of share, NFS/CIFS.
-
-.PARAMETER Credential
-A PSCredential Object conatining username and password.
-
-.PARAMETER Wait
-Waits for the job to complete.
-
-.PARAMETER Passthru
-Returns the Job object without waiting.
-
-.EXAMPLE
-PS C:\Users> Get-PELCLog -iDRACSession $session
-
-Retrieves all log entries
-
-.EXAMPLE
-PS C:\Users> Get-PELCLog -iDRACSession $session -AgentID WSMAN
-
-Retrieves all log entries whose AgentID is WSMAN
-
-.EXAMPLE
-PS C:\Users> Get-PELCLog -iDRACSession $session -Category Configuration
-
-Retrieves all log entries whose Category is Configuration
-
-.EXAMPLE
-PS C:\Users> Get-PELCLog -iDRACSession $session -RecordID 150
-
-Retrieves the log entry having RecordID 150
-
-.EXAMPLE
-PS C:\Users> Get-PELCLog -iDRACSession $session -Severity 3
-
-Retrieves all log entries having PerceivedSeverity 3
-
-.EXAMPLE
-PS C:\Users> Get-PELCLog -iDRACSession $session -Severity 3 -AgentID RACLOG
-
-Retrieves all log entries having PerceivedSeverity 3 and having AgentID RACLOG
-
-.EXAMPLE
-PS C:\Users> Get-PELCLog -iDRACSession $session -ExportType ActiveLogs -ShareObject $shareObj -FileName lclog
-
-This will export the Active LC Logs to the mentioned Share into the file lclog. The share object may be craeted by using Get-PEConfigurationShare cmdlet.
-
-.EXAMPLE
-PS C:\Users> Get-PELCLog -iDRACSession $session -ExportType All -ShareObject $shareObj -FileName lclog
-
-This will export the Complete LC Logs to the mentioned Share into the file lclog. The share object may be craeted by using Get-PEConfigurationShare cmdlet.
-
-.INPUTS
-   iDRACSession, filterOption(optional), exportOption(optional), completeExportOption(optional), filename, shareparams
-.OUTPUTS
-   It may return list of CimInstances or boolean(if export is used)
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 function Get-PELCLog
 {

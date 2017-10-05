@@ -1,93 +1,12 @@
 
 <#
-.Synopsis
-   Backup firmware and configurations for the Lifecycle Controller
-.DESCRIPTION
-   This cmdlet copies the firmware and configurations from a PowerEdge Server system to an image file and store it at a specified share.
-.EXAMPLE
-   The following example gets the PE Server System information from iDRAC(s) available in the -iDRACSession default parameter value.
-   The IPAddress and ShareName parameters are mandatory.
-   Backup-PEServerImage -IPAddress 10.10.10.100 -ShareName Config
-.EXAMPLE
-   The following example creates an iDRAC session and uses that to create a backup server image job
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
+Backup-PEServerImage.ps1 - Backup PE Server image.
 
-   Backup-PEServerImage -iDRACSession $iDRACSession -IPAddress 10.10.10.100 -ShareName Config
-.EXAMPLE
-   The following example creates an iDRAC session, uses that to create a back server image job. The -Credential parameter is used to specify the share credentials
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
-   Backup-PEServerImage -iDRACSession $iDRACSession -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential)
-.EXAMPLE
-   The following example uses -ImageName parameter to specify a name for the backup image.
+Copyright (c) 2017, Dell, Inc.
 
-   Backup-PEServerImage -iDRACSession $iDRACSession -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential) -ImageName Server1-Image.img
-.EXAMPLE
-   The -ShareType can be used to specify a NFS share type. 
-   Backup-PEServerImage -iDRACSession $iDRACSession -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential) -ShareType NFS
-.EXAMPLE
-   The -PassPhrase parameter is used to secure the backup image
-   Backup-PEServerImage -iDRACSession $iDRACSession -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential) -Passphrase 'P@ssW0rd1'
-
-   The -Passthru parameter can be used to retrieve the job object
-   $BackupJob = Backup-PEServerImage -iDRACSession $iDRACSession -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential) -Passphrase 'P@ssW0rd1' -Passthru
-.EXAMPLE
-   The -ShareObject parameter can be used to send a hashtable of share properties instead of explicit IPAddress, ShareName, and other properties
-   When building this hash ShareType must be an integer to represent NFS (0) or CIFS (2). Username and password must be provided as plain-text values.
-   $Credential = 
-   $Share = @{
-    IPAddress = '10.10.10.100'
-    ShareName = 'Config'
-    Sharetype = 2
-    Username = 'root'
-    Password = 'calvin'
-    workgroup = 'test'
-   }
-   Backup-PEServerImage -ShareObject $Share -iDRACSession $iDRACSession
-.EXAMPLE
-   The -ShareObject parameter can be used to send a hashtable of share properties instead of explicit IPAddress, ShareName, and other properties
-   This hashtable can be created using Get-PEConfigurationShare cmdlet.
-   $Share = Get-PEConfigurationJob -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential)
-   Backup-PEServerImage -ShareObject $Share -iDRACSession $iDRACSession
-.EXAMPLE
-   The -ShareObject parameter can be used to send a hashtable of share properties instead of explicit IPAddress, ShareName, and other properties
-   This hashtable can be created using Get-PEConfigurationShare cmdlet. The -Passthru parameter returns the created job object.
-   $Share = Get-PEConfigurationJob -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential)
-   $BackupJob = Backup-PEServerImage -ShareObject $Share -iDRACSession $iDRACSession -Passthru
-.EXAMPLE
-   The -ShareObject parameter can be used to send a hashtable of share properties instead of explicit IPAddress, ShareName, and other properties
-   This hashtable can be created using Get-PEConfigurationShare cmdlet. The -Wait parameter provides the progress of the backup job until it completes.
-   $Share = Get-PEConfigurationJob -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential)
-   $BackupJob = Backup-PEServerImage -ShareObject $Share -iDRACSession $iDRACSession -Wait
-.EXAMPLE
-    The -ScheduledStartTime parameter can be used to specify a different date and time for starting the backup job. This should be specified in the format yyyymmddhhmmss.
-    $Date = Get-Date '11/12/2014 21:30'
-    $StringDate = $Date.ToString("yyyymmddhhmmss")
-    $Share = Get-PEConfigurationJob -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential)
-    $BackupJob = Backup-PEServerImage -ShareObject $Share -iDRACSession $iDRACSession -ScheduledStartTime $StringDate
-.EXAMPLE
-    The -UntilTime parameter can be used to specify an end date and time for completing the backup job. This should be specified in the format yyyymmddhhmmss.
-    $StartDate = Get-Date '11/12/2014 21:30'
-    $StartString = $Date.ToString("yyyymmddhhmmss")
-
-    $EndDate = Get-Date '11/12/2014 23:30'
-    $EndString = $Date.ToString("yyyymmddhhmmss")
-
-    $Share = Get-PEConfigurationJob -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential)
-    $BackupJob = Backup-PEServerImage -ShareObject $Share -iDRACSession $iDRACSession -ScheduledStartTime $StartString -UntilTime $EndString
-.INPUTS
-   iDRACSession - CIM session with an iDRAC
-   ShareObject - A hashtable of network share properties either contructed manually or by using Get-PEConfigurationShare cmdlet
-   IPAddress - IPAddress of the network share
-   ShareName - Name of the Network share
-   ShareType - Type of network share (NFS/CIFS)
-   Credential - Credentials to access the network share
-   ImageName - Name of the backup image. By default, the computername from iDRACsession will be used for the image name
-   PassPhrase - Passphrase to secure the backup image
-   ScheduledStartTime - Specifies the scheduled start time for the backup job. The format for time is yyyymmddhhmmss. The default value is TIME_NOW which means the job will start immediately.
-   UntilTime - Specifies the end time for backup job. The format for time is yyyymmddhhmmss.
-   Passthru - Returns the backup job object
-   Wait - Waits till the backup job is complete
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 function Backup-PEServerImage 
 {

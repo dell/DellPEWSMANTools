@@ -1,20 +1,11 @@
 <#
-.SYNOPSIS
-Helper function to check if the attribute values passed as input are valid possible values.
+helper.ps1 - helper functions for public exported commands.
 
-.DESCRIPTION
-Below is an example explaining why there is a need of this helper function
-    Example - DCIM_LCService.SetAttribute() method accepts a collection of attribute values. See below:
-    Qualifiers  Name                Type        Description/Values 
-    IN, REQ     AttributeName       string      DCIM_LCAttribute.AttributeName  
-    IN, REQ     AttributeValue[]    string      Pending or Current value to be set.
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
-    Now in the Functions Set-PELCAttribute, we need to check if the possible values returned for that
-    attribute contain all the input attribute values
+Copyright (c) 2017, Dell, Inc.
 
-.NOTES
-This is an internal helper function to be used by SetAttribute() like methods to sanitize the input
-attribute values passed.
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 function TestPossibleValuesContainAttributeValues {
     [CmdletBinding()]

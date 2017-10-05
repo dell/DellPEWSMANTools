@@ -1,20 +1,11 @@
 <#
-.Synopsis
-   Gets PowerEdge Server system information using iDRAC WSMAN interfaces
-.DESCRIPTION
-   Gets PowerEdge Server system information using iDRAC WSMAN interfaces
-.EXAMPLE
-   The following example gets the PE Server System information from iDRAC(s) available in the -iDRACSession default parameter value.
-   
-   Get-PESystemInformation
-.EXAMPLE
-   The following example creates an iDRAC session and 
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
-   Get-PESystemInformation -iDRACSession $iDRACSession
-.INPUTS
-   iDRACSession - CIM session with an iDRAC
-.OUTPUTS
-   Microsoft.Management.Infrastructure.CimInstance
+Get-PESystemInformation.ps1 - GET PE System Information.
+
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
+
+Copyright (c) 2017, Dell, Inc.
+
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 function Get-PESystemInformation
 {

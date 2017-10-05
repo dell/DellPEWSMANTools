@@ -1,26 +1,11 @@
 <#
-.Synopsis
-   This cmdlets gets the configuration job status
-.DESCRIPTION
-   This cmdlets gets the configuration job status and optionally waits for the job to complete
-.EXAMPLE
-   The following example gets the PE Server System information from iDRAC(s) available in the -iDRACSession default parameter value.
-   The JobID String must have a value representing JOB ID from the LC job queue.
-   Get-PEConfigurationJobStatus -JobID 'JobID String'
-.EXAMPLE
-   The following example gets the job status from a specified iDRAC Session
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
+Get-PEConfigurationJobStatus.ps1 - GET PE configuration job status.
 
-   Get-PEConfigurationJobStatus -JobID 'JobID String' -iDRACSession $iDRACSession
-.EXAMPLE
-   The following example waits for the job to complete
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
-   Get-PEConfigurationJobStatus -JobID 'JobID String' -iDRACSession $iDRACSession -Wait
-.INPUTS
-    iDRACSession - CIM session with an iDRAC
-    JobID - JobID string from the job queue
-    Wait - Wait for the job to complete
+Copyright (c) 2017, Dell, Inc.
+
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 Function Get-PEConfigurationJobStatus 
 {

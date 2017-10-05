@@ -1,35 +1,11 @@
 <#
-.Synopsis
-   Sets the Power State of a PowerEdge Server system
-.DESCRIPTION
-   This cmdlet can be used to set the Power State of a PowerEdge Server System.
-.EXAMPLE
-   The following example gets the PE Server System information from iDRAC(s) available in the -iDRACSession default parameter value.
-   
-   Set-PEPowerState
+Set-PEPowerState.ps1 - Sets PE system power state.
 
-   Without the -State parameter, this cmdlet will attempt to PowerOn the target system.
-.EXAMPLE
-   The following example creates an iDRAC session and specifies PowerOff state using -State parameter
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
-   Set-PEPowerState -iDRACSession $iDRACSession -State PowerOff
-.EXAMPLE
-   The following example creates an iDRAC session, specifies PowerCycle state using -State parameter, and uses -Force to avoid prompting
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
+Copyright (c) 2017, Dell, Inc.
 
-   Set-PEPowerState -iDRACSession $iDRACSession -State PowerOff -Force
-.EXAMPLE
-   The following example creates an iDRAC session, specifies PowerCycle state using -State parameter, and uses -Force to avoid prompting.
-   Using -Passthru returns the object from the method invocation. This include the ReturnValue property from the method execution.
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
-
-   Set-PEPowerState -iDRACSession $iDRACSession -State PowerOff -Force -Passthru
-.INPUTS
-   iDRACSession - CIM session with an iDRAC
-   State - Intended state of the target system - PowerOn, PowerOff, PowerCycle
-   Force - Eliminates prompting to confirm the action
-   Passthru - returns the object from the method invocation
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 function Set-PEPowerState
 {

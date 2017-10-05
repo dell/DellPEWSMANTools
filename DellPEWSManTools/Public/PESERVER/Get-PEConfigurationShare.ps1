@@ -1,24 +1,11 @@
 <#
-.Synopsis
-   This cmdletis a helper function that can be used to generate a hash table of properties
-.DESCRIPTION
-   This cmdletis a helper function that can be used to generate a hash table of properties and optionally validate if the share is accessible from iDRAC
-.EXAMPLE
-   The following example gets the PE Server System information from iDRAC(s) available in the -iDRACSession default parameter value.
-   Using the default iDRAC session, you can validate and generate the share object
-   Get-PEConfigurationShare -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential) -ShareType NFS -Validate
-.EXAMPLE
-   The following example generates the share object without validation
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
+Get-PEConfigurationShare.ps1 - GET PE configuration sahre.
 
-   Get-PEConfigurationShare -IPAddress 10.10.10.100 -ShareName Config -Credential (Get-Credential)
-.INPUTS
-    iDRACSession - CIM session with an iDRAC
-    IPAddress - IPAddress of the share
-    ShareName - Name of the network share
-    ShareType - type of share (NFS/CIFS)
-    Credential - Credentials to access the network share
-    Validate - Validate if the share is accessible from iDRAC or not
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
+
+Copyright (c) 2017, Dell, Inc.
+
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 Function Get-PEConfigurationShare 
 {

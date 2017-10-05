@@ -1,75 +1,11 @@
 <#
-.Synopsis
-   Configures the Automatic backup schedule. 
-.DESCRIPTION
-   The Set-PEAutobackupSchedule cmdlet configures the backup schedule of a server. This cmdlet requires the iDRAC Session parameter.
+Set-PEAutobackupSchedule.ps1 - Sets PE system backup schedule.
 
-    This cmdlet requires the following parameters as well
-    IPAddress               IP address of NFS/CIFS share. This parameter is required if ShareType = 0 or 2
-    ShareName               Share name of the NFS/CIFS network share
-    Passphrase              Passphrase for the backup server profile
-    ShareType               Type of network share (NFS=0, CIFS=2, vFlash = 4). Defaults to NFS=0
-    Credential              PSCredential Object containing username and password
-    ImageName               Name of the backup server profile image
-    Domain                  Domain name for the network share
-    Time                    Hh:mm (hour and minute of day to run)
-    DayOfMonth              *, 1-28, L Default *
-    WeekOfMonth             *, 1-4, L Only one of the characters above. Default *
-    DayOfWeek               *, Mon, Tue, Wed, Thu, Fri, Sat, Sun Comma delimited
-    Repeat                  1-366
-    MaxNumberOfBackupArchives 1-50
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
+Copyright (c) 2017, Dell, Inc.
 
-.PARAMETER iDRACSession
-The session object created by New-PEDRACSession.
-
-.PARAMETER IPAddress               
-IP address of NFS/CIFS share. This parameter is required if ShareType = 0 or 2
-
-.PARAMETER ShareName               
-Share name of the NFS/CIFS network share
-
-.PARAMETER Passphrase              
-Passphrase for the backup server profile
-
-.PARAMETER ShareType               
-Type of network share (NFS=0, CIFS=2, vFlash = 4). Defaults to NFS=0
-
-.PARAMETER Credential
-A PSCredential Object conatining username and password.
-
-.PARAMETER ImageName               
-Name of the backup server profile image
-
-.PARAMETER Domain                  
-Domain name for the network share
-
-.PARAMETER Time                    
-Hh:mm (hour and minute of day to run)
-
-.PARAMETER DayOfMonth              
-*, 1-28, L Default *
-
-.PARAMETER WeekOfMonth             
-*, 1-4, L Only one of the characters above. Default *
-
-.PARAMETER DayOfWeek               
-*, Mon, Tue, Wed, Thu, Fri, Sat, Sun Comma delimited
-
-.PARAMETER Repeat                  
-1-366
-
-.PARAMETER MaxNumberOfBackupArchives 
-Maximum Number of Backup Archives, 1-50
-
-.PARAMETER Wait
-Waits for the job to complete.
-
-.PARAMETER Passthru
-Returns the Job object without waiting.
-
-.INPUTS
-   iDRACSession, params, usePSShare(optional)
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 function Set-PEAutobackupSchedule
 {

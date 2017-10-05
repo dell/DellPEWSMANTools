@@ -1,30 +1,11 @@
 <#
-.Synopsis
-   Update Server health report for tech support report
-.DESCRIPTION
-   This cmdlet updates the server health report
-.EXAMPLE
-   The following example gets the PE Server System information from iDRAC(s) available in the -iDRACSession default parameter value.
-   The IPAddress and ShareName parameters are mandatory.
-   Update-PEOSAppHealthData
-.EXAMPLE
-   The following example creates an iDRAC session and uses that to update Tech Support Report
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
+Update-PEOSAppHealthData.ps1 - Update PE system OS and application health data.
 
-   Update-PEOSAppHealthData -iDRACSession $iDRACSession
-.EXAMPLE
-   The following example creates an iDRAC session, uses that to create a update Tech Support Report job. The -UpdateType parameter is used to specify if a manual update should be performed.
-   $iDRACSession = New-PEDRACSession -IPAddress 10.10.10.101 -Credential (Get-Credential)
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
-   Update-PEOSAppHealthData -iDRACSession $iDRACSession -UpdateType Manual
-.EXAMPLE
-   The -Passthru parameter can be used to retrieve the job object
-   $ExportJob = Update-PEOSAppHealthData -iDRACSession $iDRACSession -UpdateType Manual -Passthru
-.INPUTS
-    iDRACSession - CIM session with an iDRAC
-    UpdateType - Manual or AgentLiteOSPlugin based update
-    Passthru - Returns the export job object
-    Wait - Waits till the export job is complete
+Copyright (c) 2017, Dell, Inc.
+
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 function Update-PEOSAppHealthData
 {

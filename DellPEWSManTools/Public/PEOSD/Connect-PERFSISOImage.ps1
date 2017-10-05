@@ -1,40 +1,11 @@
-
 <#
-.SYNOPSIS
-Short description
+Connect-PERFSISOImage.ps1 - connect a remote file share ISO image to PE DRAC.
 
-.DESCRIPTION
-Long description
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
-.PARAMETER iDRACSession
-Parameter description
+Copyright (c) 2017, Dell, Inc.
 
-.PARAMETER IPAddress
-Parameter description
-
-.PARAMETER ShareName
-Parameter description
-
-.PARAMETER ImageName
-Parameter description
-
-.PARAMETER Credential
-Parameter description
-
-.PARAMETER ShareType
-Parameter description
-
-.PARAMETER HashType
-Parameter description
-
-.PARAMETER HashValue
-Parameter description
-
-.EXAMPLE
-An example
-
-.NOTES
-General notes
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 function Connect-PERFSISOImage
 {

@@ -1,29 +1,11 @@
 <#
-.SYNOPSIS
-The function which sets an LC attribute.
+Set-PELCAttribute.ps1 - Sets PE system LC attribute.
 
-.DESCRIPTION
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
-The DCIM_LCService.SetAttribute() method is used to set or change the value of an LC attribute.
-Invoking the SetAttribute() method shall change the value of the DCIM_LCAttribute.CurrentValue or
-DCIM_LCAttribute.PendingValue property to the value specified by the AttributeValue parameter if the
-DCIM_LCAttribute.IsReadOnly property is FALSE. Invoking this method when the 
-DCIM_LCAttribute.IsReadOnly property is TRUE shall result in no change to the value of the
-DCIM_LCAttribute.CurrentValue property. The results of changing this value is described with the 
-SetResult parameter.
+Copyright (c) 2017, Dell, Inc.
 
-Return code values for the SetAttribute() method are specified in tables below.
-    * 0 - Request was successfully executed
-    * 2 - Error occurred
-
-.PARAMETER iDRACSession
-Pass the iDRACSession object created using New-PEDRACSession function.
-
-.EXAMPLE
-An example
-
-.NOTES
-General notes
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 function Set-PELCAttribute
 {

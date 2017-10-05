@@ -1,39 +1,11 @@
 <#
-.SYNOPSIS
-Short description
+Clear-PERAIDConfiguration.ps1 - Clear PE RAID configuration on the controller.
 
-.DESCRIPTION
-Long description
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
 
-.PARAMETER iDRACSession
-Parameter description
+Copyright (c) 2017, Dell, Inc.
 
-.PARAMETER InstanceID
-Parameter description
-
-.PARAMETER RebootType
-Parameter description
-
-.PARAMETER StartTime
-Parameter description
-
-.PARAMETER UntilTime
-Parameter description
-
-.PARAMETER Force
-Parameter description
-
-.PARAMETER Wait
-Parameter description
-
-.PARAMETER Passthru
-Parameter description
-
-.EXAMPLE
-An example
-
-.NOTES
-General notes
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 Function Clear-PERAIDConfiguration 
 {
