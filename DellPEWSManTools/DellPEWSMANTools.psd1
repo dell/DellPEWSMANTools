@@ -1,3 +1,13 @@
+<#
+DellPEWSMANTools.psd1 - Dell PE WSMAN Tools Module Data file
+
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
+
+Copyright (c) 2017, Dell, Inc.
+
+This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+#>
+
 #
 # Module manifest for module 'Dell PowerEdge PowerShell Tools'
 #
@@ -12,7 +22,7 @@
 RootModule = 'DellPEWSMANTools.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.1.0.0'
+ModuleVersion = '1.2.0.0'
 
 # ID used to uniquely identify this module
 GUID = 'f7bf7c3e-9052-4382-ba89-b49b8201d1b4'
