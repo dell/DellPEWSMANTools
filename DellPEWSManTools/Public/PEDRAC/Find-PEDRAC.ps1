@@ -174,7 +174,7 @@ Function Find-PEDRAC
                             }
                             catch 
                             {
-                                Write-Error 
+                                Write-Verbose "No iDRAC found at $ip"
                             }
                         } 
                     }
