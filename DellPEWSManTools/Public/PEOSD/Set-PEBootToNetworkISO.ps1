@@ -1,17 +1,17 @@
-<#
-Connect-PERFSISOImage.ps1 - connect a remote file share ISO image to PE DRAC.
+﻿<#
+Set-PEBootToNetworkISO.ps1 - Set PE System boot to network ISO.
 
 _author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com>
-_version_ = 1.0.0.1
+_version_ = 1.0.0.0
 
 Copyright (c) 2017, Dell, Inc.
 
 This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
-
-function Connect-PERFSISOImage
+function Set-PEBootToNetworkISO
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true,
+                    ConfirmImpact='low')]
     param (
         [Parameter(Mandatory)]
         [Alias("s")]
@@ -20,43 +20,36 @@ function Connect-PERFSISOImage
         
         [Parameter(Mandatory)]
         [ValidateScript({[System.Net.IPAddress]::TryParse($_,[ref]$null)})]
-        [String] $IPAddress,
+        [String]
+        $IPAddress,
 
         [Parameter(Mandatory)]
-        [String]$ShareName,
+        [String]
+        $ShareName,
 
         [Parameter(Mandatory)]
-        [String]$ImageName,
+        [String]
+        $ImageName,
 
         [Parameter(Mandatory)]
-        [pscredential]$Credential,
+        [pscredential]
+        $Credential,
 
         [Parameter()]
         [ValidateSet("NFS","CIFS")]
-        [String]$ShareType = "CIFS",
+        [String]
+        $ShareType = "CIFS",
         
         [Parameter()]
-        [ValidateSet('MD5','SHA1')]
-        [String] $HashType,
-
-        [Parameter()]
-        [String] $HashValue
+        [ValidateSet(0,1,2)]
+        [Int]
+        $ResetType = 1
     )   
 
     Begin 
     {
         $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_OSDeploymentService";Name="DCIM:OSDeploymentService";}
         $instance = New-CimInstance -ClassName DCIM_OSDeploymentService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
-
-        if ($HashType -and !$HashValue)
-        {
-            throw 'If $HashType is provided, $HashValue must be provided'
-        }
-
-        if ($HashValue -and !$HashType)
-        {
-            throw 'If $HashValue is provided, $HashType must be provided'
-        }
     }
 
     Process
@@ -68,14 +61,13 @@ function Connect-PERFSISOImage
             ImageName = $ImageName
             Username = $Credential.UserName
             Password = $Credential.GetNetworkCredential().Password
+            ResetType = $ResetType
         }
-
-        if ($HashType)
+                
+        if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Set Boot to network ISO'))
         {
-            $params.Add('HashType', $HashType)
-            $params.Add('HashValue', $HashValue)
+            $result = Invoke-CimMethod -InputObject $instance -MethodName ConfigurableBootToNetworkISO -CimSession $iDRACSession -Arguments $params
+            return $result
         }
-
-        Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName ConnectRFSISOImage -Arguments $params
     }
 }

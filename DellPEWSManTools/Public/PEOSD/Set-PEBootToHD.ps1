@@ -1,7 +1,8 @@
 <#
 Set-PEBootToHD.ps1 - Set PE System boot to hard disk.
 
-_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com>
+_version_ = 1.0.0.0
 
 Copyright (c) 2017, Dell, Inc.
 
@@ -29,14 +30,7 @@ function Set-PEBootToHD
         if ($PSCmdlet.ShouldProcess($($iDRACSession.ComputerName),'Set Boot to HD'))
         {
             $result = Invoke-CimMethod -InputObject $instance -MethodName BootToHD -CimSession $iDRACSession
-            if ($result.ReturnValue -ne 0) 
-            {
-                Write-Error $result.Message
-            } 
-            else 
-            {
-                $result
-            }
+            return $result
         }
     }
 }

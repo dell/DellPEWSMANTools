@@ -22,7 +22,7 @@ function Set-PEBIOSAttribute
         [String] $AttributeName,
 
         [Parameter()]
-        [String[]] $AttributeValue        
+        [String[]] $AttributeValue
     ) 
 
     Begin

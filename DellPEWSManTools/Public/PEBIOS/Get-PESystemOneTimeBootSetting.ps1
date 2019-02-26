@@ -16,7 +16,7 @@ function Get-PESystemOneTimeBootSetting
         [Parameter(Mandatory)]
         [Alias("s")]
         [ValidateNotNullOrEmpty()]
-        $iDRACSession      
+        $iDRACSession
     )
 
     Process

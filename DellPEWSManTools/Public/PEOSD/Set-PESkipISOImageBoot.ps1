@@ -1,37 +1,32 @@
-<#
-Get-PEDriverPackInformation.ps1 - Gets PE Driver pack information.
+﻿<#
+Set-PESkipISOImageBoot.ps1 - Skip Network ISO boot anf proceed to first device in the boot lista
 
 _author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com>
-_version_ = 1.0.0.0
+_version_ = 1.0.0.1
 
 Copyright (c) 2017, Dell, Inc.
 
 This software is licensed to you under the GNU General Public License, version 2 (GPLv2). There is NO WARRANTY for this software, express or implied, including the implied warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2 along with this software; if not, see http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #>
 
-Function Get-PEDriverPackInformation {
+function Set-PESkipISOImageBoot
+{
     [CmdletBinding()]
-    Param (
+    param (
         [Parameter(Mandatory)]
         [Alias("s")]
         [ValidateNotNullOrEmpty()]
         $iDRACSession
-    )
+    )   
 
-    Begin {
+    Begin 
+    {
         $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_OSDeploymentService";Name="DCIM:OSDeploymentService";}
         $instance = New-CimInstance -ClassName DCIM_OSDeploymentService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
     }
 
-    Process {
-        $result = Invoke-CimMethod -InputObject $instance -MethodName GetDriverPackInfo -CimSession $iDRACSession
-        if ($result.ReturnValue -ne 0) 
-        {
-            Write-Error $result.Message
-        } 
-        else 
-        {
-            $result
-        }
+    Process
+    {
+        Invoke-CimMethod -InputObject $instance -CimSession $iDRACSession -MethodName SkipISOImageBoot
     }
 }

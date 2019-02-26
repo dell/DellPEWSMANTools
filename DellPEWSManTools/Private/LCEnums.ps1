@@ -46,7 +46,8 @@ Add-Type -TypeDefinition @"
    public enum ShutdownType
    {
       Graceful = 0,
-      Forced = 1
+      Forced = 1,
+      NoReboot = 2
    }
 "@
 

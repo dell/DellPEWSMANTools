@@ -19,7 +19,7 @@ function Set-PESystemOneTimeBootSetting
         $iDRACSession,
 
         [Parameter()]
-        [String] $OneTimeBootDevice       
+        [String] $OneTimeBootDevice
     )
 
     Begin
@@ -58,7 +58,7 @@ function Set-PESystemOneTimeBootSetting
             }
             
         }
-        else 
+        else
         {
             Write-Warning -Message "$OneTimeBootDevice is not a valid one time boot device."
         }
