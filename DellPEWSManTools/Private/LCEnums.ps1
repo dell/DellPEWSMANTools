@@ -17,11 +17,19 @@ Add-Type -TypeDefinition @"
 "@
 
 Add-Type -TypeDefinition @"
+   public enum ExportFormat
+   {
+      XML = 0,
+      JSON = 1
+   }
+"@
+
+Add-Type -TypeDefinition @"
    public enum ShareType
    {
       NFS = 0,
       CIFS = 2,
-      VFLASH = 4
+      LOCAL = 4
    }
 "@
 

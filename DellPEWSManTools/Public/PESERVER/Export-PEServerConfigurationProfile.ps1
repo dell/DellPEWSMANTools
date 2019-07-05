@@ -1,7 +1,7 @@
 <#
 Export-PEServerConfigurationProfile.ps1 - Export PE Server configuration profile.
 
-_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.1.0.0
 
 Copyright (c) 2017, Dell, Inc.
 
@@ -25,6 +25,8 @@ function Export-PEServerConfigurationProfile
                    ParameterSetName='ShareWait')]
         [Parameter(Mandatory,
                    ParameterSetName='SharePassThru')]
+        [Parameter(Mandatory,
+                   ParameterSetName='Local')]
         [ValidateNotNullOrEmpty()]
         $iDRACSession,
 
@@ -32,12 +34,14 @@ function Export-PEServerConfigurationProfile
         [Parameter(Mandatory,ParameterSetName='Passthru')]
         [Parameter(Mandatory,ParameterSetName='Wait')]
         [ValidateScript({[System.Net.IPAddress]::TryParse($_,[ref]$null)})]
-        [String] $IPAddress,
+        [String]
+        $IPAddress,
 
         [Parameter(Mandatory,ParameterSetName='General')]
         [Parameter(Mandatory,ParameterSetName='Passthru')]
         [Parameter(Mandatory,ParameterSetName='Wait')]
-        [String]$ShareName,
+        [String]
+        $ShareName,
 
         [Parameter(ParameterSetName='General')]
         [Parameter(ParameterSetName='Passthru')]
@@ -45,18 +49,22 @@ function Export-PEServerConfigurationProfile
         [Parameter(ParameterSetName='Share')]
         [Parameter(ParameterSetName='ShareWait')]
         [Parameter(ParameterSetName='SharePassThru')]
-        [string]$FileName,
+        [string]
+        $FileName,
 
         [Parameter(ParameterSetName='General')]
         [Parameter(ParameterSetName='Passthru')]
         [Parameter(ParameterSetName='Wait')]
-        [ValidateSet("NFS","CIFS")]
-        [String]$ShareType = "CIFS",
+        [Parameter(ParameterSetName='Local')]
+        [ValidateSet("NFS","CIFS","LOCAL")]
+        [String]
+        $ShareType = "CIFS",
 
         [Parameter(ParameterSetName='General')]
         [Parameter(ParameterSetName='Passthru')]
         [Parameter(ParameterSetName='Wait')]
-        [PSCredential]$Credential,
+        [PSCredential]
+        $Credential,
 
         [Parameter(ParameterSetName='General')]
         [Parameter(ParameterSetName='Passthru')]
@@ -64,7 +72,19 @@ function Export-PEServerConfigurationProfile
         [Parameter(ParameterSetName='Share')]
         [Parameter(ParameterSetName='ShareWait')]
         [Parameter(ParameterSetName='SharePassThru')]
-        [string]$Target='All',
+        [string]
+        $Target='All',
+
+        [Parameter(ParameterSetName='General')]
+        [Parameter(ParameterSetName='Passthru')]
+        [Parameter(ParameterSetName='Wait')]
+        [Parameter(ParameterSetName='Share')]
+        [Parameter(ParameterSetName='ShareWait')]
+        [Parameter(ParameterSetName='SharePassThru')]
+        [Parameter(ParameterSetName = 'Local')]
+        [ValidateSet('XML','JSON')]
+        [string]
+        $ExportFormat='JSON',        
 
         [Parameter(ParameterSetName='General')]
         [Parameter(ParameterSetName='Passthru')]
@@ -73,7 +93,8 @@ function Export-PEServerConfigurationProfile
         [ValidateSet('Default','Clone','Replace')]
         [Parameter(ParameterSetName='ShareWait')]
         [Parameter(ParameterSetName='SharePassThru')]
-        [String]$ExportUse = 'Default',
+        [String]
+        $ExportUse = 'Default',
 
         [Parameter(Mandatory,
                    ParameterSetName='SharePassThru')]
@@ -81,15 +102,23 @@ function Export-PEServerConfigurationProfile
                    ParameterSetName='ShareWait')]
         [Parameter(Mandatory,
                    ParameterSetName='Share')]
-        [Hashtable]$ShareObject,
+        [Hashtable]
+        $ShareObject,
 
         [Parameter(ParameterSetName='Passthru')]
         [Parameter(ParameterSetName='SharePassThru')]
-        [Switch]$Passthru,
+        [Switch]
+        $Passthru,
 
         [Parameter(ParameterSetName='Wait')]
         [Parameter(ParameterSetName='ShareWait')]
-        [Switch]$Wait
+        [Parameter(ParameterSetName = 'Local')]
+        [Switch]
+        $Wait,
+
+        [Parameter(ParameterSetName = 'Local')]
+        [String]
+        $LocalFilePath
     )
 
     Begin
@@ -97,46 +126,58 @@ function Export-PEServerConfigurationProfile
         $properties= @{SystemCreationClassName="DCIM_ComputerSystem";SystemName="DCIM:ComputerSystem";CreationClassName="DCIM_LCService";Name="DCIM:LCService";}
         $instance = New-CimInstance -ClassName DCIM_LCService -Namespace root/dcim -ClientOnly -Key @($properties.keys) -Property $properties
 
-        if ($ShareObject) 
+        if ($PSCmdlet.ParameterSetName -ne 'Local')
         {
-            $Parameters = $ShareObject.Clone()
-        } 
-        else 
-        {
-            $Parameters = @{
-                IPAddress = $IPAddress
-                ShareName = $ShareName
-                ShareType = ([ShareType]$ShareType -as [int])
-                ExportUse = ([ExportUse]$ExportUse -as [int])
-            }
-
-            if ($Credential) 
+            if ($ShareObject) 
             {
-                $Parameters.Add('Username',$Credential.GetNetworkCredential().UserName)
-                $Parameters.Add('Password',$Credential.GetNetworkCredential().Password)
-                if ($Credential.GetNetworkCredential().Domain) 
+                $parameters = $ShareObject.Clone()
+            } 
+            else 
+            {
+                $parameters = @{
+                    IPAddress = $IPAddress
+                    ShareName = $ShareName
+                    ShareType = ([ShareType]$ShareType -as [int])
+                    ExportUse = ([ExportUse]$ExportUse -as [int])
+                }
+
+                if ($Credential) 
                 {
-                    $Parameters.Add('Workgroup',$Credential.GetNetworkCredential().Domain)
+                    $Parameters.Add('Username',$Credential.GetNetworkCredential().UserName)
+                    $Parameters.Add('Password',$Credential.GetNetworkCredential().Password)
+                    if ($Credential.GetNetworkCredential().Domain) 
+                    {
+                        $Parameters.Add('Workgroup',$Credential.GetNetworkCredential().Domain)
+                    }
                 }
             }
+
+            if (-not $FileName) 
+            {
+                $FileName = "$($iDRACSession.Computername)-Config.xml"
+            }
+            
+            Write-Verbose "Server profile will be backed up as ${FileName}"
+            $Parameters.Add('Filename',$FileName)            
+        }
+        else
+        {
+            $parameters = @{
+                ShareType = ([ShareType]$ShareType -as [int])
+                ExportUse = ([ExportUse]$ExportUse -as [int])
+            }    
         }
 
         if ($Target) 
         {
-            $Parameters.Add('Target', $Target)
+            $parameters.Add('Target', $Target)
         }
 
+        $parameters.Add('ExportFormat', [ExportFormat]$ExportFormat -as [int])
     }
 
     Process 
     {
-        if (-not $FileName) 
-        {
-            $FileName = "$($iDRACSession.Computername)-Config.xml"
-        }
-        
-        Write-Verbose "Server profile will be backed up as ${FileName}"
-        $Parameters.Add('Filename',$FileName)
         $job = Invoke-CimMethod -InputObject $instance -MethodName ExportSystemConfiguration -CimSession $iDRACSession -Arguments $Parameters
         if ($job.ReturnValue -eq 4096) 
         {
@@ -147,6 +188,13 @@ function Export-PEServerConfigurationProfile
             elseif ($Wait) 
             {
                 Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Exporting System Configuration for $($iDRACSession.ComputerName)"
+            }
+
+            if ($PSCmdlet.ParameterSetName -eq 'Local')
+            {
+                # Export the job data
+                $jobData = Export-PEJobData -iDRACSession $iDRACSession -ExportType 1
+                $jobData | Out-File -FilePath $LocalFilePath -Force -Verbose
             }
         } 
         else 
