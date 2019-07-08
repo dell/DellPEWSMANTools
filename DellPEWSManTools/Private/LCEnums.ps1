@@ -17,6 +17,14 @@ Add-Type -TypeDefinition @"
 "@
 
 Add-Type -TypeDefinition @"
+   public enum XMLSchema
+   {
+      CIMXML = 0,
+      Simple = 1
+   }
+"@
+
+Add-Type -TypeDefinition @"
    public enum ExportFormat
    {
       XML = 0,
