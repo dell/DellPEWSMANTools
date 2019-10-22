@@ -1,5 +1,5 @@
 <#
-Get-PESupportAssistCollection.ps1 - Trigger a SupportAssist collection and send to network share or Dell.
+Export-PESupportAssistCollection.ps1 - Trigger a SupportAssist collection and send to network share or Dell.
 
 _author_ = Kristian Lamb <Kristian.Lamb@Dell.com> _version_ = 1.0
 
