@@ -159,3 +159,22 @@ Add-Type -TypeDefinition @"
         }
     }
 "@
+
+Add-Type -TypeDefinition @"
+    public enum SupportAssistSelector
+    {
+        HWDATA=0,
+        OSAPPDATA=1,
+        TTYLOGS=2,
+        DEBUG=3
+    }
+"@
+
+Add-Type -TypeDefinition @"
+    public enum SupportAssistRecurrence
+    {
+        QUARTERLY=1,
+        MONTHLY=2,
+        WEEKLY=3,
+    }
+"@
