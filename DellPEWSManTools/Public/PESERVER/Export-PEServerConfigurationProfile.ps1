@@ -105,8 +105,7 @@ function Export-PEServerConfigurationProfile
         [Hashtable]
         $ShareObject,
 
-        [Parameter(ParameterSetName='Passthru')]
-        [Parameter(ParameterSetName='SharePassThru')]
+        [Parameter(ParameterSetName = 'Local')]
         [Switch]
         $Passthru,
 
@@ -181,20 +180,28 @@ function Export-PEServerConfigurationProfile
         $job = Invoke-CimMethod -InputObject $instance -MethodName ExportSystemConfiguration -CimSession $iDRACSession -Arguments $Parameters
         if ($job.ReturnValue -eq 4096) 
         {
-            if ($Passthru) 
-            {
-                $job
-            } 
-            elseif ($Wait) 
-            {
-                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Exporting System Configuration for $($iDRACSession.ComputerName)"
-            }
-
             if ($PSCmdlet.ParameterSetName -eq 'Local')
             {
+                # Wait for the job to complete
+                Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Exporting System Configuration for $($iDRACSession.ComputerName)"
+
                 # Export the job data
                 $jobData = Export-PEJobData -iDRACSession $iDRACSession -ExportType 1
-                $jobData | Out-File -FilePath $LocalFilePath -Force -Verbose
+                if (!$Passthru)
+                {
+                    $jobData | Out-File -FilePath $LocalFilePath -Force -Verbose
+                }
+                else
+                {
+                    return $jobData    
+                }
+            }
+            else
+            {
+                if ($Wait) 
+                {
+                    Wait-PEConfigurationJob -iDRACSession $iDRACSession -JobID $job.Job.EndpointReference.InstanceID -Activity "Exporting System Configuration for $($iDRACSession.ComputerName)"
+                }    
             }
         } 
         else 

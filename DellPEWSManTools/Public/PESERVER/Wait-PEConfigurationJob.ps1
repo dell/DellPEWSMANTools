@@ -21,8 +21,8 @@ Function Wait-PEConfigurationJob
         [String]$Activity = 'Performing iDRAC job'
     )
     
-    #$jobstatus = Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_LifecycleJob" -Namespace "root/dcim" -Query "SELECT InstanceID,JobStatus,Message,PercentComplete FROM DCIM_LifecycleJob Where InstanceID='$JobID'"
-    $jobstatus = Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_LifecycleJob -Namespace 'root/dcim' -Filter "InstanceID='$JobID'" -Property InstanceID,JobStatus,Message,PercentComplete
+    $jobstatus = Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_LifecycleJob" -Namespace "root/dcim" -Query "SELECT InstanceID,JobStatus,Message,PercentComplete FROM DCIM_LifecycleJob Where InstanceID='$JobID'"
+    #$jobstatus = Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_LifecycleJob -Namespace 'root/dcim' -Filter "InstanceID='$JobID'" -Property InstanceID,JobStatus,Message,PercentComplete
     if ($jobstatus.PercentComplete -eq 'NA') 
     {
         $PercentComplete = 0
@@ -36,8 +36,8 @@ Function Wait-PEConfigurationJob
         ($jobstatus.JobStatus -like '*ready*') -or ($jobstatus.JobStatus -like '*pending*') -or 
         ($jobstatus.JobStatus -like '*downloading*'))
     {
-        #$jobstatus = Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_LifecycleJob" -Namespace "root/dcim" -Query "SELECT InstanceID,JobStatus,Message,PercentComplete FROM DCIM_LifecycleJob Where InstanceID='$JobID'"
-        $jobstatus = Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_LifecycleJob -Namespace 'root/dcim' -Filter "InstanceID='$JobID'" -Property InstanceID,JobStatus,Message,PercentComplete
+        $jobstatus = Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_LifecycleJob" -Namespace "root/dcim" -Query "SELECT InstanceID,JobStatus,Message,PercentComplete FROM DCIM_LifecycleJob Where InstanceID='$JobID'"
+        #$jobstatus = Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_LifecycleJob -Namespace 'root/dcim' -Filter "InstanceID='$JobID'" -Property InstanceID,JobStatus,Message,PercentComplete
         if ($jobstatus.JobStatus -notlike '*Failed*') 
         {
             if ($jobstatus.PercentComplete -eq 'NA') 

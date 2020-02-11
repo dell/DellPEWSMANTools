@@ -84,8 +84,8 @@ function Import-PEServerConfigurationProfile
         [ValidateSet('Off','On')]
         [String]$EndHostPowerState = 'On',
 
-        [Parameter(ParameterSetName='Share')]
-        [Parameter(ParameterSetName='SharePassThru')]
+        [Parameter(ParameterSetName = 'Share')]
+        [Parameter(ParameterSetName = 'SharePassThru')]
         [Switch]$Passthru,
 
         [Parameter(Mandatory,
