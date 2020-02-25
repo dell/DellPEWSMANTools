@@ -1,7 +1,8 @@
 <#
 Get-PELCState.ps1 - GET PE LC state.
 
-_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com> _version_ = 1.0
+_author_ = Ravikanth Chaganti <Ravikanth_Chaganti@Dell.com>
+_version_ = 1.1
 
 Copyright (c) 2017, Dell, Inc.
 
@@ -29,7 +30,7 @@ function Get-PELCState
         Write-Verbose "Retrieving PE LC state information ..."
         try
         {
-            Get-CimInstance -CimSession $iDRACSession -ClassName DCIM_LCEnumeration -Namespace root\dcim -Filter "AttributeName='Lifecycle Controller State'"
+            Get-CimInstance -CimSession $iDRACSession -ResourceUri "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/DCIM_LCEnumeration" -Namespace root/dcim -Query "SELECT * FROM DCIM_LCEnumeration Where AttributeName='Lifecycle Controller State'"
         }
         catch
         {
